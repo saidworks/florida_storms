@@ -1,50 +1,59 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+	id 'java'
+	alias(libs.plugins.spring.boot)
+	alias(libs.plugins.spring.dependency.management)
+	alias(libs.plugins.spotless)
 }
 
 group = 'com.saidworks'
 version = '0.0.1-SNAPSHOT'
 description = 'florida_storms'
 
+apply from: 'buildScript/format.gradle'
+
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+	}
 }
 
 configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 ext {
-    set('snippetsDir', file("build/generated-snippets"))
+	set('snippetsDir', file("build/generated-snippets"))
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation(libs.spring.boot.starter.web) {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
+
+	// annotation processor
+	compileOnly(libs.lombok)
+	annotationProcessor(libs.lombok)
+
+	// Logging dependencies
+	implementation libs.log4j.core
+	implementation libs.log4j.api
+	runtimeOnly libs.log4j.layout.template.json
+	implementation libs.dflib
+
+	developmentOnly libs.spring.boot.devtools
+
+	testImplementation libs.spring.boot.starter.test
+	testRuntimeOnly libs.junit.platform.launcher
 }
 
 tasks.named('test') {
-    outputs.dir snippetsDir
-    useJUnitPlatform()
-}
-
-tasks.named('asciidoctor') {
-    inputs.dir snippetsDir
-    dependsOn test
+	outputs.dir snippetsDir
+	useJUnitPlatform()
 }

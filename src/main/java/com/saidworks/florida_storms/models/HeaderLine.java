@@ -1,16 +1,17 @@
+/* (C) Said Zitouni 2025 */
 package com.saidworks.florida_storms.models;
 
-import lombok.Data;
 import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder
 public class HeaderLine {
-    private String basin;        // AL, EP, CP
-    private int cycloneNumber;   // 01
-    private int year;            // 1851
-    private String name;         // UNNAMED
-    private int entriesCount;    // 14
+    private String basin; // AL, EP, CP
+    private int cycloneNumber; // 01
+    private int year; // 1851
+    private String name; // UNNAMED
+    private int entriesCount; // 14
 
     /**
      * Parses a header line in the format:
@@ -48,7 +49,6 @@ public class HeaderLine {
 
     @Override
     public String toString() {
-        return String.format("%s,            %s,     %d,",
-                getCycloneId(), name, entriesCount);
+        return String.format("%s,            %s,     %d,", getCycloneId(), name, entriesCount);
     }
 }

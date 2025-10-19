@@ -1,1 +1,22 @@
-spring.application.name=florida_storms
+spring:
+  application:
+    name: florida-storms
+  task:
+    execution:
+      simple:
+        concurrency-limit: 14
+      pool:
+        core-size: 8
+        max-size: 16
+        keep-alive: 60s
+
+
+cyclone:
+  processing:
+    chunk-size: 1000
+  data:
+    hurdat2: classpath:datasets/hurdat2-1851-2024-040425.txt
+logging:
+  config: classpath:log4j2.xml
+server:
+  port: 1234
