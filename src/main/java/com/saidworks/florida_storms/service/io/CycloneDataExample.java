@@ -1,5 +1,5 @@
 /* (C) Said Zitouni 2025 */
-package com.saidworks.florida_storms.io;
+package com.saidworks.florida_storms.service.io;
 
 import com.saidworks.florida_storms.models.Cyclone;
 import com.saidworks.florida_storms.models.DataLine;
