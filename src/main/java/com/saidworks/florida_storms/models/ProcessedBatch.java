@@ -1,11 +1,10 @@
 /* (C) Said Zitouni 2025 */
 package com.saidworks.florida_storms.models;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * Represents a batch after processing with parsed data and validation results

@@ -3,17 +3,16 @@ package com.saidworks.florida_storms.service.io;
 
 import com.saidworks.florida_storms.config.CycloneProcessingProperties;
 import com.saidworks.florida_storms.models.RawBatch;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Service;
 
 /**
  * Service responsible for loading the file and splitting it into raw batches
@@ -37,7 +36,8 @@ public class BatchLoaderService {
         log.info("Loading cyclone data from: {}", resource.getFilename());
         log.info("Batch chunk size: {}", chunkSize);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             List<String> currentBatch = new ArrayList<>();
             int lineNumber = 0;
             int batchId = 0;
@@ -69,8 +69,10 @@ public class BatchLoaderService {
             }
         }
 
-        log.info("Loaded {} batches from file (total lines: {})", batches.size(), 
-                 batches.stream().mapToInt(b -> b.getLines().size()).sum());
+        log.info(
+                "Loaded {} batches from file (total lines: {})",
+                batches.size(),
+                batches.stream().mapToInt(b -> b.getLines().size()).sum());
         return batches;
     }
 

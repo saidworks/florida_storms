@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class CycloneDataExample{
+public class CycloneDataExample {
     private CycloneDataParser parser;
 
     public CycloneDataExample(CycloneDataParser parser) {
@@ -79,7 +79,8 @@ public class CycloneDataExample{
                         // Check if landfall was in Florida
                         double lat = dataLine.getLatitude();
                         double lon = dataLine.getLongitude();
-                        if ('N' == dataLine.getLatitudeDirection() && 'W' == dataLine.getLongitudeDirection()) {
+                        if ('N' == dataLine.getLatitudeDirection()
+                                && 'W' == dataLine.getLongitudeDirection()) {
                             if (lat >= FLORIDA_MIN_LAT
                                     && lat <= FLORIDA_MAX_LAT
                                     && lon >= FLORIDA_MIN_LON

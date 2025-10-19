@@ -3,10 +3,9 @@ package com.saidworks.florida_storms.service.io;
 
 import com.saidworks.florida_storms.models.Cyclone;
 import com.saidworks.florida_storms.models.ProcessedBatch;
+import java.util.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 /**
  * Service responsible for merging processed batches into complete cyclones
@@ -34,10 +33,9 @@ public class BatchMergerService {
 
                 if (partial.isHeaderPresent()) {
                     // This partial has a header, start or update cyclone
-                    Cyclone cyclone = cycloneMap.computeIfAbsent(
-                            partial.getCycloneId(),
-                            _ -> new Cyclone(partial.getHeader())
-                    );
+                    Cyclone cyclone =
+                            cycloneMap.computeIfAbsent(
+                                    partial.getCycloneId(), _ -> new Cyclone(partial.getHeader()));
 
                     cyclone.getDataLines().addAll(partial.getDataLines());
 
@@ -47,13 +45,17 @@ public class BatchMergerService {
                     if (!cycloneMap.isEmpty()) {
                         Cyclone lastCyclone = getLastCyclone(cycloneMap);
                         lastCyclone.getDataLines().addAll(partial.getDataLines());
-                        log.debug("Attached {} orphaned data lines to cyclone {}", 
-                                  partial.getDataLines().size(), lastCyclone.getHeader().getCycloneId());
+                        log.debug(
+                                "Attached {} orphaned data lines to cyclone {}",
+                                partial.getDataLines().size(),
+                                lastCyclone.getHeader().getCycloneId());
                     } else {
                         // No cyclone to attach to yet, save for later
                         orphanedPartials.add(partial);
-                        log.warn("Found orphaned data lines in batch {} without any previous cyclone", 
-                                 batch.getBatchId());
+                        log.warn(
+                                "Found orphaned data lines in batch {} without any previous"
+                                        + " cyclone",
+                                batch.getBatchId());
                     }
                 }
             }
@@ -75,22 +77,24 @@ public class BatchMergerService {
                 completeCount++;
             } else {
                 incompleteCount++;
-                log.debug("Cyclone {} has incomplete data: expected {} entries, found {}", 
-                         cyclone.getHeader().getCycloneId(),
-                         cyclone.getHeader().getEntriesCount(),
-                         cyclone.getDataLines().size());
+                log.debug(
+                        "Cyclone {} has incomplete data: expected {} entries, found {}",
+                        cyclone.getHeader().getCycloneId(),
+                        cyclone.getHeader().getEntriesCount(),
+                        cyclone.getDataLines().size());
             }
         }
 
-        log.info("Merged into {} cyclones ({} complete, {} incomplete)", 
-                 cyclones.size(), completeCount, incompleteCount);
+        log.info(
+                "Merged into {} cyclones ({} complete, {} incomplete)",
+                cyclones.size(),
+                completeCount,
+                incompleteCount);
 
         return cyclones;
     }
 
     private Cyclone getLastCyclone(Map<String, Cyclone> map) {
-        return map.values().stream()
-                .reduce((_, second) -> second)
-                .orElse(null);
+        return map.values().stream().reduce((_, second) -> second).orElse(null);
     }
 }

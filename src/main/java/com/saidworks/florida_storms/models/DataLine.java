@@ -4,7 +4,6 @@ package com.saidworks.florida_storms.models;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,7 +11,7 @@ import lombok.Data;
 @Builder
 public class DataLine {
     private LocalDateTime dateTime;
-    private Character recordType; // L, P, I, S, T or null for space/empty 
+    private Character recordType; // L, P, I, S, T or null for space/empty
     private String stormStatus; // TD, TS, HU, EX, SD, SS, LO, DB
 
     private double latitude;
@@ -51,7 +50,8 @@ public class DataLine {
     public static DataLine parse(String line) {
         String[] parts = line.split(",");
         if (parts.length < 20) { // Minimum 20 fields are expected
-            throw new IllegalArgumentException("Invalid data line format: not enough fields in line: " + line);
+            throw new IllegalArgumentException(
+                    "Invalid data line format: not enough fields in line: " + line);
         }
 
         // Parse date and time

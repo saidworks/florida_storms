@@ -12,9 +12,9 @@ description = 'florida_storms'
 apply from: 'buildScript/format.gradle'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
-    }
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+	}
 }
 
 configurations {
@@ -37,9 +37,9 @@ dependencies {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
 
-    // annotation processor
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
+	// annotation processor
+	compileOnly(libs.lombok)
+	annotationProcessor(libs.lombok)
 
 	// Logging dependencies
 	implementation libs.log4j.core

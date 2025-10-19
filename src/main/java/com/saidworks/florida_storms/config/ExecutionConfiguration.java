@@ -10,20 +10,20 @@ public class ExecutionConfiguration {
     @Value("${cyclone.data.hurdat2}")
     private Resource sourceFile;
 
-//    @Bean
-//    public CycloneProcessingOrchestrator cycloneProcessingOrchestrator() {
-//        return new CycloneProcessingOrchestrator();
-//    }
-//
-//    @Bean
-//    public CycloneDataExample cycloneDataExample() {
-//        return new CycloneDataExample(new CycloneDataParser());
-//    }
-//
-//    @Bean
-//    public CommandLineRunner commandLineRunner(CycloneDataExample cycloneDataExample) {
-//        return _ -> {
-//            cycloneDataExample.start();
-//        };
-//    }
+    //    @Bean
+    //    public CycloneProcessingOrchestrator cycloneProcessingOrchestrator() {
+    //        return new CycloneProcessingOrchestrator();
+    //    }
+    //
+    //    @Bean
+    //    public CycloneDataExample cycloneDataExample() {
+    //        return new CycloneDataExample(new CycloneDataParser());
+    //    }
+    //
+    //    @Bean
+    //    public CommandLineRunner commandLineRunner(CycloneDataExample cycloneDataExample) {
+    //        return _ -> {
+    //            cycloneDataExample.start();
+    //        };
+    //    }
 }

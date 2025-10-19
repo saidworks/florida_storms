@@ -1,10 +1,9 @@
 /* (C) Said Zitouni 2025 */
 package com.saidworks.florida_storms.models;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * Represents a batch of raw file lines before parsing

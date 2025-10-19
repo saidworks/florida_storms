@@ -4,14 +4,13 @@ package com.saidworks.florida_storms.service.io;
 import com.saidworks.florida_storms.models.Cyclone;
 import com.saidworks.florida_storms.models.ProcessedBatch;
 import com.saidworks.florida_storms.models.RawBatch;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
 
 /**
  * Orchestrates the three-phase cyclone data processing pipeline:
@@ -71,8 +70,12 @@ public class CycloneProcessingOrchestrator {
         log.info("Phase 3 completed in {}ms", phase3Duration);
 
         long totalDuration = System.currentTimeMillis() - pipelineStart;
-        log.info("=== Pipeline completed in {}ms (Load: {}ms, Process: {}ms, Merge: {}ms) ===",
-                totalDuration, phase1Duration, phase2Duration, phase3Duration);
+        log.info(
+                "=== Pipeline completed in {}ms (Load: {}ms, Process: {}ms, Merge: {}ms) ===",
+                totalDuration,
+                phase1Duration,
+                phase2Duration,
+                phase3Duration);
         log.info("Total cyclones processed: {}", cyclones.size());
 
         return cyclones;
@@ -93,9 +96,8 @@ public class CycloneProcessingOrchestrator {
         }
 
         // Wait for all to complete and collect results
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0])
-        );
+        CompletableFuture<Void> allFutures =
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
         // Block until all are done
         allFutures.join();
