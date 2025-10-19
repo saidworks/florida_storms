@@ -4,6 +4,7 @@ package com.saidworks.florida_storms.models;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,37 +12,37 @@ import lombok.Data;
 @Builder
 public class DataLine {
     private LocalDateTime dateTime;
-    private Character recordIdentifier; // L, P, I, S, T or null for space/empty
-    private String systemStatus; // TD, TS, HU, EX, SD, SS, LO, DB
+    private Character recordType; // L, P, I, S, T or null for space/empty 
+    private String stormStatus; // TD, TS, HU, EX, SD, SS, LO, DB
 
     private double latitude;
-    private char latitudeHemisphere; // N, S
+    private char latitudeDirection; // N, S
     private double longitude;
-    private char longitudeHemisphere; // W, E
+    private char longitudeDirection; // W, E
 
-    private int maxSustainedWind; // knots
-    private Integer minPressure; // millibars, can be -999 for missing data
+    private int maxWindSpeed; // knots
+    private Integer centralPressure; // millibars, can be -999 for missing data
 
     // 34kt wind radii (nautical miles), can be -999 for missing data
-    private Integer ne34;
-    private Integer se34;
-    private Integer sw34;
-    private Integer nw34;
+    private Integer windRadius34NE;
+    private Integer windRadius34SE;
+    private Integer windRadius34SW;
+    private Integer windRadius34NW;
 
     // 50kt wind radii (nautical miles), can be -999 for missing data
-    private Integer ne50;
-    private Integer se50;
-    private Integer sw50;
-    private Integer nw50;
+    private Integer windRadius50NE;
+    private Integer windRadius50SE;
+    private Integer windRadius50SW;
+    private Integer windRadius50NW;
 
     // 64kt wind radii (nautical miles), can be -999 for missing data
-    private Integer ne64;
-    private Integer se64;
-    private Integer sw64;
-    private Integer nw64;
+    private Integer windRadius64NE;
+    private Integer windRadius64SE;
+    private Integer windRadius64SW;
+    private Integer windRadius64NW;
 
     // Radius of maximum wind (nautical miles), can be -999 for missing data
-    private Integer radiusMaxWind;
+    private Integer maxWindRadius;
 
     /**
      * Parses a data line in the format:
@@ -49,8 +50,8 @@ public class DataLine {
      */
     public static DataLine parse(String line) {
         String[] parts = line.split(",");
-        if (parts.length < 21) {
-            throw new IllegalArgumentException("Invalid data line format: " + line);
+        if (parts.length < 20) { // Minimum 20 fields are expected
+            throw new IllegalArgumentException("Invalid data line format: not enough fields in line: " + line);
         }
 
         // Parse date and time
@@ -66,73 +67,77 @@ public class DataLine {
         LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute);
 
         // Parse record identifier (can be empty)
-        String recordIdStr = parts[2].trim();
-        Character recordIdentifier = recordIdStr.isEmpty() ? null : recordIdStr.charAt(0);
+        String recordTypeStr = parts[2].trim();
+        Character recordType = recordTypeStr.isEmpty() ? null : recordTypeStr.charAt(0);
 
         // Parse latitude and longitude
         String latStr = parts[4].trim();
         String lonStr = parts[5].trim();
 
-        Pattern coordPattern = Pattern.compile("(\\d+\\.\\d+)([NSWE])");
+        // Use separate patterns for latitude and longitude for hemisphere validation
+        Pattern latPattern = Pattern.compile("(\\d+\\.\\d+)([NS])");
+        Pattern lonPattern = Pattern.compile("(\\d+\\.\\d+)([WE])");
 
         // Parse latitude
-        Matcher latMatcher = coordPattern.matcher(latStr);
+        Matcher latMatcher = latPattern.matcher(latStr);
         if (!latMatcher.matches()) {
             throw new IllegalArgumentException("Invalid latitude format: " + latStr);
         }
         double latitude = Double.parseDouble(latMatcher.group(1));
-        char latHemisphere = latMatcher.group(2).charAt(0);
+        char latitudeDirection = latMatcher.group(2).charAt(0);
 
         // Parse longitude
-        Matcher lonMatcher = coordPattern.matcher(lonStr);
+        Matcher lonMatcher = lonPattern.matcher(lonStr);
         if (!lonMatcher.matches()) {
             throw new IllegalArgumentException("Invalid longitude format: " + lonStr);
         }
         double longitude = Double.parseDouble(lonMatcher.group(1));
-        char lonHemisphere = lonMatcher.group(2).charAt(0);
+        char longitudeDirection = lonMatcher.group(2).charAt(0);
 
         // Parse integer values (handling -999 as missing data)
-        int maxSustainedWind = Integer.parseInt(parts[6].trim());
+        int maxWindSpeed = Integer.parseInt(parts[6].trim());
 
-        Integer minPressure = parseIntWithMissing(parts[7].trim());
-        Integer ne34 = parseIntWithMissing(parts[8].trim());
-        Integer se34 = parseIntWithMissing(parts[9].trim());
-        Integer sw34 = parseIntWithMissing(parts[10].trim());
-        Integer nw34 = parseIntWithMissing(parts[11].trim());
-        Integer ne50 = parseIntWithMissing(parts[12].trim());
-        Integer se50 = parseIntWithMissing(parts[13].trim());
-        Integer sw50 = parseIntWithMissing(parts[14].trim());
-        Integer nw50 = parseIntWithMissing(parts[15].trim());
-        Integer ne64 = parseIntWithMissing(parts[16].trim());
-        Integer se64 = parseIntWithMissing(parts[17].trim());
-        Integer sw64 = parseIntWithMissing(parts[18].trim());
-        Integer nw64 = parseIntWithMissing(parts[19].trim());
-        Integer radiusMaxWind = parseIntWithMissing(parts[20].trim());
+        Integer centralPressure = parseIntWithMissing(parts[7].trim());
+        Integer windRadius34NE = parseIntWithMissing(parts[8].trim());
+        Integer windRadius34SE = parseIntWithMissing(parts[9].trim());
+        Integer windRadius34SW = parseIntWithMissing(parts[10].trim());
+        Integer windRadius34NW = parseIntWithMissing(parts[11].trim());
+        Integer windRadius50NE = parseIntWithMissing(parts[12].trim());
+        Integer windRadius50SE = parseIntWithMissing(parts[13].trim());
+        Integer windRadius50SW = parseIntWithMissing(parts[14].trim());
+        Integer windRadius50NW = parseIntWithMissing(parts[15].trim());
+        Integer windRadius64NE = parseIntWithMissing(parts[16].trim());
+        Integer windRadius64SE = parseIntWithMissing(parts[17].trim());
+        Integer windRadius64SW = parseIntWithMissing(parts[18].trim());
+        Integer windRadius64NW = parseIntWithMissing(parts[19].trim());
+
+        // maxWindRadius is optional as it's not in all HURDAT2 versions
+        Integer maxWindRadius = parts.length > 20 ? parseIntWithMissing(parts[20].trim()) : null;
 
         // Build the data line object
         return DataLine.builder()
                 .dateTime(dateTime)
-                .recordIdentifier(recordIdentifier)
-                .systemStatus(parts[3].trim())
+                .recordType(recordType)
+                .stormStatus(parts[3].trim())
                 .latitude(latitude)
-                .latitudeHemisphere(latHemisphere)
+                .latitudeDirection(latitudeDirection)
                 .longitude(longitude)
-                .longitudeHemisphere(lonHemisphere)
-                .maxSustainedWind(maxSustainedWind)
-                .minPressure(minPressure)
-                .ne34(ne34)
-                .se34(se34)
-                .sw34(sw34)
-                .nw34(nw34)
-                .ne50(ne50)
-                .se50(se50)
-                .sw50(sw50)
-                .nw50(nw50)
-                .ne64(ne64)
-                .se64(se64)
-                .sw64(sw64)
-                .nw64(nw64)
-                .radiusMaxWind(radiusMaxWind)
+                .longitudeDirection(longitudeDirection)
+                .maxWindSpeed(maxWindSpeed)
+                .centralPressure(centralPressure)
+                .windRadius34NE(windRadius34NE)
+                .windRadius34SE(windRadius34SE)
+                .windRadius34SW(windRadius34SW)
+                .windRadius34NW(windRadius34NW)
+                .windRadius50NE(windRadius50NE)
+                .windRadius50SE(windRadius50SE)
+                .windRadius50SW(windRadius50SW)
+                .windRadius50NW(windRadius50NW)
+                .windRadius64NE(windRadius64NE)
+                .windRadius64SE(windRadius64SE)
+                .windRadius64SW(windRadius64SW)
+                .windRadius64NW(windRadius64NW)
+                .maxWindRadius(maxWindRadius)
                 .build();
     }
 
@@ -149,41 +154,7 @@ public class DataLine {
      * Checks if the data line has a landfall record
      */
     public boolean isLandfall() {
-        return recordIdentifier != null && recordIdentifier == 'L';
-    }
-
-    @Override
-    public String toString() {
-        String recordIdStr = (recordIdentifier == null) ? " " : recordIdentifier.toString();
-
-        return String.format(
-                "%04d%02d%02d, %04d, %s, %s, %4.1f%c, %5.1f%c, %3d, %4s, %4s, %4s, %4s, %4s, %4s,"
-                        + " %4s, %4s, %4s, %4s, %4s, %4s, %4s, %4s",
-                dateTime.getYear(),
-                dateTime.getMonthValue(),
-                dateTime.getDayOfMonth(),
-                dateTime.getHour() * 100 + dateTime.getMinute(),
-                recordIdStr,
-                systemStatus,
-                latitude,
-                latitudeHemisphere,
-                longitude,
-                longitudeHemisphere,
-                maxSustainedWind,
-                formatMissingValue(minPressure),
-                formatMissingValue(ne34),
-                formatMissingValue(se34),
-                formatMissingValue(sw34),
-                formatMissingValue(nw34),
-                formatMissingValue(ne50),
-                formatMissingValue(se50),
-                formatMissingValue(sw50),
-                formatMissingValue(nw50),
-                formatMissingValue(ne64),
-                formatMissingValue(se64),
-                formatMissingValue(sw64),
-                formatMissingValue(nw64),
-                formatMissingValue(radiusMaxWind));
+        return recordType != null && recordType == 'L';
     }
 
     /**

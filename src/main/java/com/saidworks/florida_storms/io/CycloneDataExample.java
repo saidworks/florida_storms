@@ -27,7 +27,7 @@ public class CycloneDataExample{
                 Cyclone cyclone = cyclones.get(i);
                 HeaderLine header = cyclone.getHeader();
 
-                log.info("\n--- Cyclone #{} ---", (i + 1));
+                log.info("--- Cyclone #{} ---", (i + 1));
                 log.info("ID: {}", header.getCycloneId());
                 log.info("Basin: {}", header.getBasin());
                 log.info("Cyclone Number: {}", header.getCycloneNumber());
@@ -44,20 +44,28 @@ public class CycloneDataExample{
                 List<DataLine> dataLines = cyclone.getDataLines();
                 int linesToShow = Math.min(3, dataLines.size());
 
-                log.info("\nFirst {} data points:", linesToShow);
+                log.info("First {} data points:", linesToShow);
                 for (int j = 0; j < linesToShow; j++) {
                     DataLine dataLine = dataLines.get(j);
                     log.info(
                             "  {} - Status: {} - Wind: {} knots{}",
                             dataLine.getDateTime(),
-                            dataLine.getSystemStatus(),
-                            dataLine.getMaxSustainedWind(),
+                            dataLine.getStormStatus(),
+                            dataLine.getMaxWindSpeed(),
                             (dataLine.isLandfall() ? " (LANDFALL)" : ""));
                 }
 
                 // Check for landfall events
-                log.info("\nLandfall events:");
+                log.info("Landfall events:");
                 boolean hasLandfall = false;
+                boolean madeLandfallInFlorida = false;
+
+                // Define Florida's approximate bounding box
+                final double FLORIDA_MIN_LAT = 24.39;
+                final double FLORIDA_MAX_LAT = 31.0;
+                final double FLORIDA_MIN_LON = 80.03;
+                final double FLORIDA_MAX_LON = 87.63;
+
                 for (DataLine dataLine : dataLines) {
                     if (dataLine.isLandfall()) {
                         hasLandfall = true;
@@ -65,14 +73,28 @@ public class CycloneDataExample{
                                 "  {} at {}°{}, {}°{} - Wind: {} knots",
                                 dataLine.getDateTime(),
                                 dataLine.getLatitude(),
-                                dataLine.getLatitudeHemisphere(),
                                 dataLine.getLongitude(),
-                                dataLine.getLongitudeHemisphere(),
-                                dataLine.getMaxSustainedWind());
+                                dataLine.getMaxWindSpeed());
+
+                        // Check if landfall was in Florida
+                        double lat = dataLine.getLatitude();
+                        double lon = dataLine.getLongitude();
+                        if ('N' == dataLine.getLatitudeDirection() && 'W' == dataLine.getLongitudeDirection()) {
+                            if (lat >= FLORIDA_MIN_LAT
+                                    && lat <= FLORIDA_MAX_LAT
+                                    && lon >= FLORIDA_MIN_LON
+                                    && lon <= FLORIDA_MAX_LON) {
+                                madeLandfallInFlorida = true;
+                                log.info("      >> This was a landfall in Florida.");
+                            }
+                        }
                     }
                 }
                 if (!hasLandfall) {
                     log.info("  None recorded");
+                }
+                if (madeLandfallInFlorida) {
+                    log.info("Conclusion: This cyclone made landfall in Florida.");
                 }
             }
 

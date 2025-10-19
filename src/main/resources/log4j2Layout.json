@@ -1,12 +1,12 @@
 {
-  "instant": {
+  "dateAndTime": {
     "$resolver": "timestamp",
     "pattern": {
       "format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
       "timeZone": "UTC"
     }
   },
-  "application": "florida-storms",
+  "applicationName": "florida-storms",
   "message": {
     "$resolver": "message",
     "stringified": true

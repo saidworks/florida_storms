@@ -14,7 +14,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.Resource;
 @Log4j2
 public class CycloneDataParser {
-    private Resource sourceFile;
+    private final Resource sourceFile;
 
     public CycloneDataParser(Resource sourceFile) {
         this.sourceFile = sourceFile;
