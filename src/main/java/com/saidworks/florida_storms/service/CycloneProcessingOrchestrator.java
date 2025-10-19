@@ -1,13 +1,19 @@
 /* (C) Said Zitouni 2025 */
-package com.saidworks.florida_storms.service.io;
+package com.saidworks.florida_storms.service;
 
-import com.saidworks.florida_storms.models.Cyclone;
-import com.saidworks.florida_storms.models.ProcessedBatch;
-import com.saidworks.florida_storms.models.RawBatch;
+import com.saidworks.florida_storms.models.batch.ProcessedBatch;
+import com.saidworks.florida_storms.models.batch.RawBatch;
+import com.saidworks.florida_storms.models.domain.Cyclone;
+import com.saidworks.florida_storms.models.exception.BatchProcessingException;
+import com.saidworks.florida_storms.service.batch.BatchLoaderService;
+import com.saidworks.florida_storms.service.batch.BatchMergerService;
+import com.saidworks.florida_storms.service.batch.BatchProcessorService;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -107,13 +113,14 @@ public class CycloneProcessingOrchestrator {
         for (CompletableFuture<ProcessedBatch> future : futures) {
             try {
                 processedBatches.add(future.get());
-            } catch (Exception e) {
+            } catch (BatchProcessingException | ExecutionException | InterruptedException e) {
+                Thread.currentThread().interrupt();
                 log.error("Error getting processed batch result", e);
             }
         }
 
         // Sort by batch ID to maintain order
-        processedBatches.sort((a, b) -> Integer.compare(a.getBatchId(), b.getBatchId()));
+        processedBatches.sort(Comparator.comparingInt(ProcessedBatch::getBatchId));
 
         return processedBatches;
     }

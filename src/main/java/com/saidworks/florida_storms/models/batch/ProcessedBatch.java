@@ -1,6 +1,8 @@
 /* (C) Said Zitouni 2025 */
-package com.saidworks.florida_storms.models;
+package com.saidworks.florida_storms.models.batch;
 
+import com.saidworks.florida_storms.models.domain.DataLine;
+import com.saidworks.florida_storms.models.domain.HeaderLine;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
@@ -31,7 +33,7 @@ public class ProcessedBatch {
         private boolean isComplete; // True if we know this is the last batch for this cyclone
     }
 
-    public static ProcessedBatch.ProcessedBatchBuilder createEmpty(int batchId) {
+    public static ProcessedBatch.ProcessedBatchBuilder createEmptyBatch(int batchId) {
         return ProcessedBatch.builder()
                 .batchId(batchId)
                 .partialCyclones(new ArrayList<>())

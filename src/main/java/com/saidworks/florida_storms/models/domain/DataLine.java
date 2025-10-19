@@ -1,5 +1,5 @@
 /* (C) Said Zitouni 2025 */
-package com.saidworks.florida_storms.models;
+package com.saidworks.florida_storms.models.domain;
 
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
@@ -155,12 +155,5 @@ public class DataLine {
      */
     public boolean isLandfall() {
         return recordType != null && recordType == 'L';
-    }
-
-    /**
-     * Helper method to format values for output, displaying -999 for missing data
-     */
-    private String formatMissingValue(Integer value) {
-        return (value == null) ? "-999" : value.toString();
     }
 }

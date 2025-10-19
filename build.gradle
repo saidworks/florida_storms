@@ -21,6 +21,10 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	testCompileOnly {
+		extendsFrom annotationProcessor
+	}
+
 }
 
 repositories {
@@ -47,8 +51,12 @@ dependencies {
 	runtimeOnly libs.log4j.layout.template.json
 	implementation libs.dflib
 
+	// JSON processing for API calls
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
 	developmentOnly libs.spring.boot.devtools
 
+	testAnnotationProcessor(libs.lombok)
 	testImplementation libs.spring.boot.starter.test
 	testRuntimeOnly libs.junit.platform.launcher
 }

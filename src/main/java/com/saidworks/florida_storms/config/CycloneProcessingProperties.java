@@ -14,7 +14,7 @@ public class CycloneProcessingProperties {
 
     @lombok.Data
     public static class Processing {
-        private int chunkSize = 1000;
+        private int chunkSize;
     }
 
     @lombok.Data
