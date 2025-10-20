@@ -1,14 +1,24 @@
-spring:
-  application:
-    name: florida-storms
-  task:
-    execution:
-      simple:
-        concurrency-limit: 14
-      pool:
-        core-size: 8
-        max-size: 16
-        keep-alive: 60s
+executors:
+    controller:
+      config:
+        corePoolSize: 2
+        maxPoolSize: 4
+        keepAlive: 60
+        queueCapacity: 8
+    ioBlocking:
+      config:
+        corePoolSize: 2
+        maxPoolSize: 4
+        keepAlive: 60
+        queue-capacity: 8
+    service:
+      config:
+        corePoolSize: 4
+        maxPoolSize: 8
+        keepAlive: 1
+        queueCapacity: 100
+
+
 
 
 cyclone:
@@ -16,7 +26,20 @@ cyclone:
     chunk-size: 1000
   data:
     hurdat2: classpath:datasets/hurdat2-1851-2024-040425.txt
+
+
+
 logging:
   config: classpath:log4j2.xml
+
 server:
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 1024
   port: 1234
+
+
+spring:
+  application:
+    name: florida-storms

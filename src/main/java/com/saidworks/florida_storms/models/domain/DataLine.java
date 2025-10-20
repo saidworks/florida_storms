@@ -1,7 +1,9 @@
 /* (C) Said Zitouni 2025 */
-package com.saidworks.florida_storms.models;
+package com.saidworks.florida_storms.models.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Builder;
@@ -158,9 +160,11 @@ public class DataLine {
     }
 
     /**
-     * Helper method to format values for output, displaying -999 for missing data
+     *   check if data line is within range of years
      */
-    private String formatMissingValue(Integer value) {
-        return (value == null) ? "-999" : value.toString();
+    public boolean isAfter1900() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate cutoffDate = LocalDate.parse("19000101", formatter);
+        return dateTime.toLocalDate().isAfter(cutoffDate);
     }
 }
