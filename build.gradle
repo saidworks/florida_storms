@@ -52,12 +52,13 @@ dependencies {
 	implementation libs.dflib
 
 	// JSON processing for API calls
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+	implementation libs.jackson.core
 
 	developmentOnly libs.spring.boot.devtools
 
 	testAnnotationProcessor(libs.lombok)
 	testImplementation libs.spring.boot.starter.test
+	testImplementation libs.assertj.core
 	testRuntimeOnly libs.junit.platform.launcher
 }
 

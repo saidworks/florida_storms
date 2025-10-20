@@ -1,4 +1,5 @@
 [versions]
+assertj="3.27.6"
 java = "25"
 springBoot = "3.5.6"
 springDependencyManagement = "1.1.7"
@@ -6,14 +7,19 @@ spotless = "7.2.1"
 lombok = "1.18.42"
 log4j = "2.22.1"
 dflib = "1.3.0"
+faster-xml= "2.17.0"
 
 [libraries]
+assertj-core={module="org.assertj:assertj-core", version.ref="assertj"}
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+
+jackson-core={module="com.fasterxml.jackson.core:jackson-databind", version.ref="faster-xml"}
+
 
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }

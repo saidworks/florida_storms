@@ -3,7 +3,7 @@ package com.saidworks.florida_storms.controller;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.exception.BatchProcessingException;
-import com.saidworks.florida_storms.service.CycloneProcessingOrchestrator;
+import com.saidworks.florida_storms.service.batch.CycloneProcessingOrchestrator;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
