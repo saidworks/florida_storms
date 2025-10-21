@@ -130,7 +130,9 @@ public class BatchProcessorService {
                 }
 
                 DataLine dataLine = DataLine.parse(line);
-                currentPartial.getDataLines().add(dataLine);
+                if (dataLine.isLandfall() && dataLine.isAfter1900()) {
+                    currentPartial.getDataLines().add(dataLine);
+                }
             }
 
         } catch (Exception e) {

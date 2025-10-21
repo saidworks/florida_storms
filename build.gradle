@@ -17,6 +17,10 @@ java {
 	}
 }
 
+springBoot{
+	mainClass = "com.saidworks.florida_storms.FloridaStormsApplication"
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -36,7 +40,6 @@ ext {
 }
 
 dependencies {
-
 	implementation(libs.spring.boot.starter.web) {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
@@ -54,6 +57,20 @@ dependencies {
 	// JSON processing for API calls
 	implementation libs.jackson.core
 
+	// Report generation
+	implementation (libs.apache.poi){
+		// this exclusion fix CVE-2025-48924
+		exclude group: 'commons-io', module: 'commons-io'
+		exclude group: 'org.apache.commons', module: 'commons-lang3'
+	}
+	implementation(libs.apache.poi.ooxml){
+		// this exclusion fix CVE-2025-48924
+		exclude group: 'commons-io', module: 'commons-io'
+		exclude group: 'org.apache.commons', module: 'commons-lang3'
+	}
+	implementation(libs.apache.commons)
+	implementation(libs.apache.commons.lang3)
+	// useful for development in spring boot
 	developmentOnly libs.spring.boot.devtools
 
 	testAnnotationProcessor(libs.lombok)

@@ -3,11 +3,16 @@ package com.saidworks.florida_storms.controller;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.service.landfall.LandfallFilterService;
+import com.saidworks.florida_storms.service.report.LandfallReportService;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,12 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class LandfallController {
 
     private final LandfallFilterService landfallFilterService;
+    private final LandfallReportService landfallReportService;
     private final ExecutorService controllerTaskExecutor;
 
     public LandfallController(
             LandfallFilterService landfallFilterService,
+            LandfallReportService landfallReportService,
             @Qualifier("controllerTaskExecutor") ExecutorService controllerTaskExecutor) {
         this.landfallFilterService = landfallFilterService;
+        this.landfallReportService = landfallReportService;
         this.controllerTaskExecutor = controllerTaskExecutor;
     }
 
@@ -71,8 +79,30 @@ public class LandfallController {
                                         maxLon),
                         controllerTaskExecutor)
                 .thenCompose(
-                        v ->
+                        _ ->
                                 landfallFilterService.filterByCustomBoundaries(
                                         minLat, maxLat, minLon, maxLon));
+    }
+
+    @GetMapping("/report/excel")
+    public CompletableFuture<ResponseEntity<byte[]>> downloadLandfallReport(
+            @RequestParam String areaName) {
+
+        return landfallReportService
+                .generateLandfallReportByArea(areaName)
+                .thenApply(
+                        excelData -> {
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                            headers.setContentDisposition(
+                                    ContentDisposition.attachment()
+                                            .filename(
+                                                    "landfall_report_"
+                                                            + areaName.replaceAll("\\s+", "_")
+                                                            + ".xlsx")
+                                            .build());
+
+                            return ResponseEntity.ok().headers(headers).body(excelData);
+                        });
     }
 }
