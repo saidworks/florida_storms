@@ -25,13 +25,14 @@ Florida since 1900. The app produces a report with storm name, date of landfall,
 
 **Non-Functional Requirements:**
 
-| Reference   | Description                                                                                                            | Status       |
-|-------------|------------------------------------------------------------------------------------------------------------------------|--------------|
-| NON-F-REQ-1 | Code Quality: The code should be well-commented and organized to ensure other programmers can understand how it works. | In Progress  |
-| NON-F-REQ-2 | Technology Choice: The application should be developed using a programming language of your choice.                    | Completed    |
-| NON-F-REQ-3 | Scalability and Maintainability: The application should be designed with scalability and maintainability in mind.      | In Progress  |
-| NON-F-REQ-4 | Data Handling Efficiency: The application should be able to handle large data sets efficiently.                        | In Progress  |
-| NON-F-REQ-5 | Service Level Agreement with consumer initially is under 10 second to generate report from million records             | Completed |
+| Reference    | Description                                                                                                            | Status      |
+|--------------|------------------------------------------------------------------------------------------------------------------------|-------------|
+| NON-F-REQ-1  | Code Quality: The code should be well-commented and organized to ensure other programmers can understand how it works. | In Progress |
+| NON-F-REQ-2  | Technology Choice: The application should be developed using a programming language of your choice.                    | Completed   |
+| NON-F-REQ-3  | Scalability and Maintainability: The application should be designed with scalability and maintainability in mind.      | In Progress |
+| NON-F-REQ-4  | Data Handling Efficiency: The application should be able to handle large data sets efficiently.                        | In Progress |
+| NON-F-REQ-5  | Service Level Agreement with consumer initially is under 10 second to generate report from million records             | Completed   |
+| NON-F-REQ-6  | Add spring open api swagger docs for endpoints for readiblity by consumers | Not Started | 
 
 ### Configuration
 
