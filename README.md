@@ -9,12 +9,12 @@ since 1900. The app produces a report with storm name, date of landfall, and max
 
 **Functional Requirements:**
 
-| Reference | Description                                                                                                                        | Status      |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| F-REQ-1   | Data Parsing: The application must be able to parse the HURDAT2 data set.                                                          | Completed   |
-| F-REQ-2   | Landfall Identification: The application must identify hurricanes that have made landfall in Florida since 1900.                   | Review      |
-| F-REQ-3   | Report Generation: The application must output a report listing the name, date of landfall, and maximum wind speed for each event. |  Completed |
-| F-REQ-4   | Landfall Identification: Create a feature to not use `L` for landfall identification.                                              | Review      |
+| Reference | Description                                                                                                                        | Status    |
+|-----------|------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| F-REQ-1   | Data Parsing: The application must be able to parse the HURDAT2 data set.                                                          | Completed |
+| F-REQ-2   | Landfall Identification: The application must identify hurricanes that have made landfall in Florida since 1900.                   | QA        |
+| F-REQ-3   | Report Generation: The application must output a report listing the name, date of landfall, and maximum wind speed for each event. | Completed |
+| F-REQ-4   | Landfall Identification: Create a feature to not use `L` for landfall identification.                                              | QA        |
 
 **Non-Functional Requirements:**
 
