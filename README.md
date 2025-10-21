@@ -1,7 +1,8 @@
 HURDAT2 Florida Landfall Finder
 ===============================
 
-This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that'd made landfall in Florida since 1900. The app produces a report with storm name, date of landfall, and maximum wind speed for each event.
+This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that'd made landfall in Florida (this is flexible you can search for other areas in atlantic as well refer to [Generating Excel Reports](#Generating-Excel-Reports)) 
+since 1900. The app produces a report with storm name, date of landfall, and maximum wind speed for each event.
 
 
 ### Requirements breakdown:
