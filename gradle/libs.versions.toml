@@ -1,33 +1,58 @@
+
 [versions]
-assertj="3.27.6"
+# Core Java and Build Tools
 java = "25"
-springBoot = "3.5.6"
-springDependencyManagement = "1.1.7"
 spotless = "7.2.1"
 lombok = "1.18.42"
+apache-commons-lang3 = "3.19.0"
+
+# Spring Framework
+springBoot = "3.5.6"
+springDependencyManagement = "1.1.7"
+
+# Testing
+assertj = "3.27.6"
+
+# Logging
 log4j = "2.22.1"
+
+# Data Processing and Analysis
 dflib = "1.3.0"
-faster-xml= "2.17.0"
+faster-xml = "2.17.0"
+apache-poi = "5.4.1"
+apache-commons-version = "2.20.0"
 
 [libraries]
-assertj-core={module="org.assertj:assertj-core", version.ref="assertj"}
+# Spring Framework Dependencies
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+# Testing Dependencies
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
+# Utility Libraries
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+apache-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "apache-commons-lang3" }
 
-jackson-core={module="com.fasterxml.jackson.core:jackson-databind", version.ref="faster-xml"}
+# JSON Processing
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "faster-xml" }
 
-
+# Logging
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-layout-template-json = { module = "org.apache.logging.log4j:log4j-layout-template-json", version.ref = "log4j" }
 
+# Excel Processing
+apache-poi = { module = "org.apache.poi:poi", version.ref = "apache-poi" }
+apache-poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "apache-poi" }
+apache-commons   = { module = "commons-io:commons-io", version.ref="apache-commons-version"}
+# Data Processing
 dflib = { module = "org.dflib:dflib", version.ref = "dflib" }
 
 [plugins]
+# Build and Dependency Management
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

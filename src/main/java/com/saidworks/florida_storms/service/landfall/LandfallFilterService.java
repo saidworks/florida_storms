@@ -2,7 +2,6 @@
 package com.saidworks.florida_storms.service.landfall;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
-import com.saidworks.florida_storms.models.domain.DataLine;
 import com.saidworks.florida_storms.models.domain.GeoBoundary;
 import com.saidworks.florida_storms.models.exception.GeocodingException;
 import com.saidworks.florida_storms.service.batch.CycloneProcessingOrchestrator;
@@ -101,18 +100,6 @@ public class LandfallFilterService {
      */
     private List<Cyclone> filterCyclonesByBoundary(List<Cyclone> cyclones, GeoBoundary boundary) {
         log.info("Applying boundary filter: {}", boundary.getName());
-        // Remove any DataLine entries that are not landfall
-        cyclones.forEach(
-                cyclone -> {
-                    if (cyclone.getDataLines() != null) {
-                        List<DataLine> landfallOnly =
-                                cyclone.getDataLines().stream()
-                                        .filter(DataLine::isLandfall)
-                                        .filter(DataLine::isAfter1900)
-                                        .toList();
-                        cyclone.setDataLines(landfallOnly);
-                    }
-                });
 
         List<Cyclone> filteredCyclones =
                 cyclones.stream()
@@ -131,7 +118,6 @@ public class LandfallFilterService {
      */
     private boolean hasLandfallInBoundary(Cyclone cyclone, GeoBoundary boundary) {
         return cyclone.getDataLines().stream()
-                .filter(DataLine::isLandfall)
                 .anyMatch(
                         dataLine ->
                                 boundary.containsCoordinate(
