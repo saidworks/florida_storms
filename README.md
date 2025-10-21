@@ -6,14 +6,6 @@ This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify
 
 ### Requirements breakdown:
 
-Functional Requirements:
-**HURDAT2 Florida Landfall Finder**
-
-This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that've made landfall in
-Florida since 1900. The app produces a report with storm name, date of landfall, and maximum wind speed for each event.
-
-### Requirements breakdown:
-
 **Functional Requirements:**
 
 | Reference | Description                                                                                                                        | Status      |
