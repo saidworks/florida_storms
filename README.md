@@ -15,8 +15,8 @@ since 1900. The app produces a report with storm name, date of landfall, and max
 | F-REQ-2   | Landfall Identification: The application must identify hurricanes that have made landfall in Florida since 1900.                   | Completed |
 | F-REQ-3   | Report Generation: The application must output a report listing the name, date of landfall, and maximum wind speed for each event. | Completed |
 | F-REQ-4   | Landfall Identification: Create a feature to not use `L` for landfall identification.                                              | QA        |
-| F-REQ-5   | Add client to get latitude and longtitude of an area by name                                                                       | Completed |   
-| F-REQ-6   | Filter hurricanes based latitude and longitude                                                                                     | Completed |   
+| F-REQ-5   | Add client to get latitude and longtitude of an area by name                                                                       | Completed |
+| F-REQ-6   | Filter hurricanes based latitude and longitude                                                                                     | Completed |
 
 **Non-Functional Requirements:**
 
