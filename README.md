@@ -1,7 +1,7 @@
 HURDAT2 Florida Landfall Finder
 ===============================
 
-This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that'd made landfall in Florida (this is flexible you can search for other areas in atlantic as well refer to [Generating Excel Reports](#Generating-Excel-Reports)) 
+This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that'd made landfall in Florida (this is flexible you can search for other areas in atlantic as well refer to [Generating Excel Reports](#Generating-Excel-Reports))
 since 1900. The app produces a report with storm name, date of landfall, and maximum wind speed for each event.
 
 
@@ -12,26 +12,33 @@ since 1900. The app produces a report with storm name, date of landfall, and max
 | Reference | Description                                                                                                                        | Status    |
 |-----------|------------------------------------------------------------------------------------------------------------------------------------|-----------|
 | F-REQ-1   | Data Parsing: The application must be able to parse the HURDAT2 data set.                                                          | Completed |
-| F-REQ-2   | Landfall Identification: The application must identify hurricanes that have made landfall in Florida since 1900.                   | QA        |
+| F-REQ-2   | Landfall Identification: The application must identify hurricanes that have made landfall in Florida since 1900.                   | Completed |
 | F-REQ-3   | Report Generation: The application must output a report listing the name, date of landfall, and maximum wind speed for each event. | Completed |
 | F-REQ-4   | Landfall Identification: Create a feature to not use `L` for landfall identification.                                              | QA        |
+| F-REQ-5   | Add client to get latitude and longtitude of an area by name                                                                       | Completed |
+| F-REQ-6   | Filter hurricanes based latitude and longitude                                                                                     | Completed |
 
 **Non-Functional Requirements:**
 
 | Reference   | Description                                                                                                            | Status      |
 |-------------|------------------------------------------------------------------------------------------------------------------------|-------------|
-| NON-F-REQ-1 | Code Quality: The code should be well-commented and organized to ensure other programmers can understand how it works. | In Progress |
+| NON-F-REQ-1 | Code Quality: The code should be well-commented and organized to ensure other programmers can understand how it works. | Completed   |
 | NON-F-REQ-2 | Technology Choice: The application should be developed using a programming language of your choice.                    | Completed   |
-| NON-F-REQ-3 | Scalability and Maintainability: The application should be designed with scalability and maintainability in mind.      | In Progress |
+| NON-F-REQ-3 | Scalability and Maintainability: The application should be designed with scalability and maintainability in mind.      | QA          |
 | NON-F-REQ-4 | Data Handling Efficiency: The application should be able to handle large data sets efficiently.                        | In Progress |
 | NON-F-REQ-5 | Service Level Agreement with consumer initially is under 10 second to generate report from million records             | Completed   |
-| NON-F-REQ-6 | Add spring open api swagger docs for endpoints for readiblity by consumers | Not Started | 
+| NON-F-REQ-6 | Add spring open api swagger docs for endpoints for readiblity by consumers | Completed   |
 | NON-F-REQ-7 | Testing plan should be documented outlining functional requirements, with clear strategy                                           | Not started |
 
 ### Configuration
 
 - cyclone.data.hurdat2 — path or classpath resource to HURDAT2 input.
 - Other settings (chunk size, output) can be configured in `application.yml`.
+
+### API Documentation
+
+Explore and test the API using Swagger UI. In a development environment, the interactive documentation is available at: [http://localhost:1234/swagger-ui/index.html](http://localhost:1234/swagger-ui/index.html). This provides a convenient way to understand and interact with all available endpoints and their parameters.
+
 
 
 ### Generating Excel Reports

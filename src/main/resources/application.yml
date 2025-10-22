@@ -43,3 +43,18 @@ server:
 spring:
   application:
     name: florida-storms
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+
+florida:
+  storms:
+    openapi:
+      dev-url: http://localhost:1234
+      prod-url: https://api.florida-storms.com

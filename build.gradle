@@ -28,6 +28,11 @@ configurations {
 	testCompileOnly {
 		extendsFrom annotationProcessor
 	}
+	configureEach {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+		exclude group: 'ch.qos.logback'
+		// Don't exclude validation-related dependencies
+	}
 
 }
 
@@ -43,6 +48,9 @@ dependencies {
 	implementation(libs.spring.boot.starter.web) {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
+
+	// API Documentation
+	implementation libs.springdoc.openapi.starter.webmvc.ui
 
 	// annotation processor
 	compileOnly(libs.lombok)
