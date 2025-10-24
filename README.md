@@ -46,16 +46,16 @@ The stack used in this project consists of the following:
 - Important: --network host is supported on Linux Docker Engine only. It does not behave the same (and is not supported) on Docker Desktop for macOS/Windows.
 
 Steps:
-	1. Build the image:
+1. Build the image:
 ```bash
 		docker build -t hurdat2-florida .
 ```
-	2. Run using host network (Linux only — no -p needed):
+2.a  Run using host network (Linux only — no -p needed):
 ```bash
 	docker run --rm --network host -e SPRING_PROFILES_ACTIVE=dev hurdat2-florida
 ```
 
-- Alternative for macOS/Windows (use port mapping):
+2.b Alternative for macOS/Windows (use port mapping):
 ```bash
 	docker run --rm -p 1234:1234 -e SPRING_PROFILES_ACTIVE=dev hurdat2-florida
 ```
