@@ -1,8 +1,10 @@
 HURDAT2 Florida Landfall Finder
 ===============================
 
-This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that'd made landfall in Florida (this is flexible you can search for other areas in atlantic as well refer to [Generating Excel Reports](#Generating-Excel-Reports))
-since 1900. The app produces a report with storm name, date of landfall, and maximum wind speed for each event.
+This Spring Boot application parses `NOAA HURDAT2 (Best Track)` data to identify hurricanes that'd made landfall in Florida (this is flexible you can search for other areas in Atlantic region as well refer to [Generating Excel Reports](#Generating-Excel-Reports))
+since 1900.
+
+The app produces a report with storm name, date of landfall, and maximum wind speed for each event.
 
 
 ### Requirements breakdown:
@@ -29,6 +31,35 @@ since 1900. The app produces a report with storm name, date of landfall, and max
 | NON-F-REQ-5 | Service Level Agreement with consumer initially is under 10 second to generate report from million records             | Completed   |
 | NON-F-REQ-6 | Add spring open api swagger docs for endpoints for readiblity by consumers | Completed   |
 | NON-F-REQ-7 | Testing plan should be documented outlining functional requirements, with clear strategy                                           | Not started |
+
+### Technology Stack:
+The stack used in this project consists of the following:
+- Java 25 (Latest Long Term Supported Version)
+- you can find the latest JDK Temurin 25 here: https://adoptium.net/temurin/releases/
+- Spring Boot 3.5.6
+- dependency for spring is managed through spring boot dependency management plugin this make patching easier for regular security updates
+- Gradle 9.1
+- Spotless Plugin for code formatting
+
+### Running with Docker (host network)
+- If you want the container to share the host's network namespace (so the app is reachable at http://localhost:1234 on the host), you can run Docker with host networking.
+- Important: --network host is supported on Linux Docker Engine only. It does not behave the same (and is not supported) on Docker Desktop for macOS/Windows.
+
+Steps:
+	1. Build the image:
+```bash
+		docker build -t hurdat2-florida .
+```
+	2. Run using host network (Linux only — no -p needed):
+```bash
+	docker run --rm --network host -e SPRING_PROFILES_ACTIVE=dev hurdat2-florida
+```
+
+- Alternative for macOS/Windows (use port mapping):
+```bash
+	docker run --rm -p 1234:1234 -e SPRING_PROFILES_ACTIVE=dev hurdat2-florida
+```
+
 
 ### Configuration
 
