@@ -21,19 +21,25 @@ springBoot{
 	mainClass = "com.saidworks.florida_storms.FloridaStormsApplication"
 }
 
+sourceSets {
+	integrationTest {
+		java.srcDir file('src/integrationTest/java')
+		resources.srcDir file('src/integrationTest/resources')
+		compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+		runtimeClasspath += output + compileClasspath
+	}
+}
+
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-	testCompileOnly {
-		extendsFrom annotationProcessor
-	}
+	compileOnly { extendsFrom annotationProcessor }
+	testCompileOnly { extendsFrom annotationProcessor }
 	configureEach {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 		exclude group: 'ch.qos.logback'
-		// Don't exclude validation-related dependencies
 	}
 
+	integrationTestImplementation { extendsFrom testImplementation }
+	integrationTestRuntimeOnly { extendsFrom testRuntimeOnly }
 }
 
 repositories {
@@ -85,9 +91,37 @@ dependencies {
 	testImplementation libs.spring.boot.starter.test
 	testImplementation libs.assertj.core
 	testRuntimeOnly libs.junit.platform.launcher
+
+	// Cucumber for tests and integration tests
+	testImplementation libs.cucumber.java
+	testImplementation libs.cucumber.junit.platform.engine
+	testImplementation libs.cucumber.spring
+	integrationTestImplementation libs.spring.boot.starter.test
+	integrationTestImplementation libs.cucumber.java
+	integrationTestImplementation libs.cucumber.junit.platform.engine
+	integrationTestImplementation libs.cucumber.spring
+	integrationTestImplementation libs.junit.platform.suite
+	integrationTestRuntimeOnly libs.junit.platform.launcher
 }
 
 tasks.named('test') {
 	outputs.dir snippetsDir
 	useJUnitPlatform()
+}
+
+tasks.register('integrationTest', Test) {
+	description = 'Runs Cucumber integration tests.'
+	group = 'verification'
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	useJUnitPlatform()
+	shouldRunAfter tasks.test
+}
+
+tasks.named('check') {
+	dependsOn tasks.named('integrationTest')
+}
+
+tasks.named('processIntegrationTestResources') {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
