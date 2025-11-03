@@ -116,6 +116,7 @@ tasks.register('integrationTest', Test) {
 	classpath = sourceSets.integrationTest.runtimeClasspath
 	useJUnitPlatform()
 	shouldRunAfter tasks.test
+
 }
 
 tasks.named('check') {

@@ -7,18 +7,19 @@ import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.domain.GeoBoundary;
 import com.saidworks.florida_storms.service.landfall.GeocodingService;
 import com.saidworks.florida_storms.service.landfall.LandfallFilterService;
+import io.cucumber.java.DataTableType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import org.apache.commons.lang3.NotImplementedException;
 
 public class FloridaLandfallSteps extends CucumberSpringConfiguration {
 
-    private GeoBoundary floridaBoundary;
+    private GeoBoundary areaBoundary;
     private List<Cyclone> result;
     private final LandfallFilterService landfallFilterService;
     private final GeocodingService geocodingService;
@@ -34,7 +35,7 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
         // Approximate bounding box for Florida (rough number for testing)
         // Latitude: 24.5°N (Keys) to 31.0°N (Georgia border)
         // Longitude: 87.7°W (near Pensacola) to 80.0°W (Atlantic coast)
-        floridaBoundary =
+        areaBoundary =
                 GeoBoundary.builder()
                         .name("Florida")
                         .minLatitude(24.5)
@@ -48,10 +49,10 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
     public void countCyclonesThatMadeLandfallWithinBoundaries() {
         CompletableFuture<List<Cyclone>> future =
                 landfallFilterService.filterByCustomBoundaries(
-                        floridaBoundary.getMinLatitude(),
-                        floridaBoundary.getMaxLatitude(),
-                        floridaBoundary.getMinLongitude(),
-                        floridaBoundary.getMaxLongitude());
+                        areaBoundary.getMinLatitude(),
+                        areaBoundary.getMaxLatitude(),
+                        areaBoundary.getMinLongitude(),
+                        areaBoundary.getMaxLongitude());
         result = future.join();
     }
 
@@ -66,21 +67,30 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
         CompletableFuture<GeoBoundary> geoBoundaryCompletableFuture =
                 geocodingService.getAreaBoundaries(areaName);
         try {
-            floridaBoundary = geoBoundaryCompletableFuture.get();
-            assertThat(floridaBoundary)
-                    .matches(
-                            f ->
-                                    f.getMinLatitude() >= 24.396308
-                                            && f.getMaxLatitude() <= 31.000762
-                                            && f.getMaxLongitude() <= -79.974306);
+            areaBoundary = geoBoundaryCompletableFuture.get();
 
         } catch (InterruptedException | ExecutionException _) {
             Thread.currentThread().interrupt();
         }
     }
+    //NOSONAR
+    @DataTableType
+    public GeoBoundary geoBoundaryTransformer(Map<String, String> row) {
+        return new GeoBoundary(
+                row.get("name"),
+                Double.parseDouble(row.get("minLatitude")),
+                Double.parseDouble(row.get("maxLatitude")),
+                Double.parseDouble(row.get("minLongitude")),
+                Double.parseDouble(row.get("maxLongitude")));
+    }
 
-    @And("Geographic boundaries should match")
-    public void geographicBoundarisShouldMatch() {
-        throw new NotImplementedException("test method not implemented yet");
+    @And("^Geographic boundaries should be within the following geoboundary$")
+    public void geographicBoundarisShouldMatch(GeoBoundary geoBoundary) {
+        assertThat(areaBoundary)
+                .matches(
+                        f ->
+                                f.getMinLatitude() >= geoBoundary.getMinLatitude()
+                                        && f.getMaxLatitude() <= geoBoundary.getMaxLatitude()
+                                        && f.getMaxLongitude() <= geoBoundary.getMaxLongitude());
     }
 }

@@ -8,14 +8,15 @@ Feature: Florida cyclone landfall count
     When We count the cyclones that made landfall within those boundaries
     Then the total number of landfalls should be 167
 
-  @ignore
   Scenario Outline: Verify landfall count <areaName>
     Given the <areaName> find the geographic boundaries
-    And Geographic boundaries should match
+    And Geographic boundaries should be within the following geoboundary
+      | name       | minLatitude   | maxLatitude   | minLongitude   | maxLongitude   |
+      | <areaName> | <minLatitude> | <maxLatitude> | <minLongitude> | <maxLongitude> |
     When We count the cyclones that made landfall within those boundaries
     Then the total number of landfalls should be <count>
 
     Examples:
-      | areaName | count |
-      | Florida  | 167   |
-      | Texas    | 50    |
+      | areaName | count | minLatitude | maxLatitude | minLongitude | maxLongitude |
+      | Florida  | 167   | 24.396308   | 31.000762   | -87.634896   | -79.974306   |
+      | Texas    | 75    | 25.83706    | 36.5004529  | -106.6458459 | -93.5078217  |
