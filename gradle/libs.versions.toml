@@ -64,3 +64,4 @@ dflib = { module = "org.dflib:dflib", version.ref = "dflib" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+jacoco = { id = "jacoco"}
