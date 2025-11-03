@@ -39,3 +39,4 @@ out/
 
 ### scratch code for brainstorming ###
 src/main/java/com/saidworks/florida_storms/service/brainstorm
+/target/**

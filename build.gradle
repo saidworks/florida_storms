@@ -3,6 +3,7 @@ plugins {
 	alias(libs.plugins.spring.boot)
 	alias(libs.plugins.spring.dependency.management)
 	alias(libs.plugins.spotless)
+	alias(libs.plugins.jacoco)
 }
 
 group = 'com.saidworks'
@@ -21,19 +22,25 @@ springBoot{
 	mainClass = "com.saidworks.florida_storms.FloridaStormsApplication"
 }
 
+sourceSets {
+	integrationTest {
+		java.srcDir file('src/integrationTest/java')
+		resources.srcDir file('src/integrationTest/resources')
+		compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+		runtimeClasspath += output + compileClasspath
+	}
+}
+
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-	testCompileOnly {
-		extendsFrom annotationProcessor
-	}
+	compileOnly { extendsFrom annotationProcessor }
+	testCompileOnly { extendsFrom annotationProcessor }
 	configureEach {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 		exclude group: 'ch.qos.logback'
-		// Don't exclude validation-related dependencies
 	}
 
+	integrationTestImplementation { extendsFrom testImplementation }
+	integrationTestRuntimeOnly { extendsFrom testRuntimeOnly }
 }
 
 repositories {
@@ -43,6 +50,8 @@ repositories {
 ext {
 	set('snippetsDir', file("build/generated-snippets"))
 }
+
+
 
 dependencies {
 	implementation(libs.spring.boot.starter.web) {
@@ -85,9 +94,80 @@ dependencies {
 	testImplementation libs.spring.boot.starter.test
 	testImplementation libs.assertj.core
 	testRuntimeOnly libs.junit.platform.launcher
+
+	// Cucumber for tests and integration tests
+	testImplementation libs.cucumber.java
+	testImplementation libs.cucumber.junit.platform.engine
+	testImplementation libs.cucumber.spring
+	integrationTestImplementation libs.spring.boot.starter.test
+	integrationTestImplementation libs.cucumber.java
+	integrationTestImplementation libs.cucumber.junit.platform.engine
+	integrationTestImplementation libs.cucumber.spring
+	integrationTestImplementation libs.junit.platform.suite
+	integrationTestRuntimeOnly libs.junit.platform.launcher
 }
 
 tasks.named('test') {
 	outputs.dir snippetsDir
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+
+	// Cucumber reporting configuration
+	systemProperty 'cucumber.plugin', 'json:build/reports/cucumber/test/cucumber.json,html:build/reports/cucumber/test/cucumber.html,pretty'
+	systemProperty 'cucumber.publish.quiet', 'true'
+}
+
+tasks.register('integrationTest', Test) {
+	description = 'Runs Cucumber integration tests.'
+	group = 'verification'
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	useJUnitPlatform()
+	shouldRunAfter tasks.test
+	finalizedBy jacocoIntegrationTestReport
+
+	// Cucumber reporting configuration
+	systemProperty 'cucumber.plugin', 'json:build/reports/cucumber/integrationTest/cucumber.json,html:build/reports/cucumber/integrationTest/cucumber.html,pretty'
+	systemProperty 'cucumber.publish.quiet', 'true'
+}
+
+tasks.named('jacocoTestReport') {
+	dependsOn tasks.test
+	reports {
+		xml.required = true
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test')
+	}
+}
+
+tasks.register('jacocoIntegrationTestReport', JacocoReport) {
+	dependsOn tasks.integrationTest
+	sourceSets sourceSets.main
+	executionData tasks.integrationTest
+	reports {
+		xml.required = true
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco/integrationTest')
+	}
+}
+
+tasks.register('jacocoFullReport', JacocoReport) {
+	description = 'Generates an aggregate report from all test tasks'
+	group = 'reporting'
+	dependsOn tasks.test, tasks.integrationTest
+	sourceSets sourceSets.main
+	executionData fileTree(project.layout.buildDirectory).include('jacoco/*.exec')
+	reports {
+		xml.required = true
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco/full')
+	}
+}
+
+tasks.named('check') {
+	dependsOn tasks.named('integrationTest')
+}
+
+tasks.named('processIntegrationTestResources') {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

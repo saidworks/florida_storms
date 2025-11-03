@@ -18,9 +18,15 @@ spotless {
 		googleJavaFormat('1.27.0').aosp().reflowLongStrings().skipJavadocFormatting()
 		// fix formatting of type annotations
 		formatAnnotations()
+        // format gherkin
+
 		// make sure every file has the following copyright header.
 		// optionally, Spotless can set copyright years by digging
 		// through git history (see "license" section below)
 		licenseHeader '/* (C) Said Zitouni $YEAR */'
 	}
+    gherkin {
+        target("**/*.feature")
+        gherkinUtils()
+    }
 }
