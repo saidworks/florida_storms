@@ -73,6 +73,7 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
             Thread.currentThread().interrupt();
         }
     }
+
     //NOSONAR
     @DataTableType
     public GeoBoundary geoBoundaryTransformer(Map<String, String> row) {
