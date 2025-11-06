@@ -90,6 +90,12 @@ public class BatchProcessorService {
                 serviceTaskExecutor);
     }
 
+    /**
+     * Parses a single line into the evolving {@code PartialCyclone} structure.
+     * - If the line is a header, it finalizes the previous partial (if any) and starts a new one.
+     * - If the line is a data line, it adds eligible landfall entries (after 1900) to the current partial.
+     * Any parsing error is collected into {@code errors} and logged as a warning.
+     */
     private static ProcessedBatch.PartialCyclone processPartialCyclone(
             RawBatch rawBatch,
             String line,

@@ -14,6 +14,22 @@ public class HeaderLine {
     private int entriesCount; // 14
 
     /**
+     * Quick heuristic to determine whether a text line is a HURDAT2 header line
+     * rather than a data line. Headers have just a few commas (typically <= 3),
+     * while data lines contain many comma-separated fields (20+).
+     *
+     * @param line raw line from the dataset
+     * @return true if the line looks like a header, false otherwise
+     */
+    public static boolean isHeaderLine(String line) {
+        if (line == null || line.trim().isEmpty()) {
+            return false;
+        }
+        long commaCount = line.chars().filter(ch -> ch == ',').count();
+        return commaCount <= 3;
+    }
+
+    /**
      * Parses a header line in the format:
      * AL011851,            UNNAMED,     14,
      */

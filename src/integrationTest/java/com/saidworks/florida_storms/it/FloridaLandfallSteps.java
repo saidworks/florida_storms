@@ -74,7 +74,7 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
         }
     }
 
-    //NOSONAR
+    // NO SONAR
     @DataTableType
     public GeoBoundary geoBoundaryTransformer(Map<String, String> row) {
         return new GeoBoundary(
@@ -86,7 +86,7 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
     }
 
     @And("^Geographic boundaries should be within the following geoboundary$")
-    public void geographicBoundarisShouldMatch(GeoBoundary geoBoundary) {
+    public void geographicBoundariesShouldMatch(GeoBoundary geoBoundary) {
         assertThat(areaBoundary)
                 .matches(
                         f ->

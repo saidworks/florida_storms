@@ -18,6 +18,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
+import static com.saidworks.florida_storms.models.domain.HeaderLine.isHeaderLine;
+
 /**
  * Service responsible for loading the file and splitting it into raw batches using async execution
  * Ensures cyclone headers and their data lines stay together in the same batch
@@ -55,7 +57,7 @@ public class BatchLoaderService {
                             try (BufferedReader reader =
                                     new BufferedReader(
                                             new InputStreamReader(resource.getInputStream()))) {
-                                batches.set(processCurrentBatch(reader, targetChunkSize));
+                                batches.set(processBatches(reader, targetChunkSize));
                             } catch (IOException e) {
                                 log.error("Error reading file: {}", resource.getFilename(), e);
                                 throw new IoBlockingException(
@@ -83,7 +85,7 @@ public class BatchLoaderService {
                 .join();
     }
 
-    private List<RawBatch> processCurrentBatch(BufferedReader reader, int targetChunkSize)
+    private List<RawBatch> processBatches(BufferedReader reader, int targetChunkSize)
             throws IOException {
         List<RawBatch> batches = new ArrayList<>();
         BatchProcessingState state = new BatchProcessingState();
@@ -98,7 +100,7 @@ public class BatchLoaderService {
             }
 
             if (isHeaderLine(line)) {
-                handleHeaderLine(line, state, batches, targetChunkSize);
+                handleBatchBasedOnStateAndHeader(line, state, batches, targetChunkSize);
             } else if (state.inCyclone) {
                 state.currentCyclone.add(line);
             } else {
@@ -110,7 +112,7 @@ public class BatchLoaderService {
         return batches;
     }
 
-    private void handleHeaderLine(
+    private void handleBatchBasedOnStateAndHeader(
             String line, BatchProcessingState state, List<RawBatch> batches, int targetChunkSize) {
         finalizePreviousCyclone(state);
 
@@ -175,23 +177,6 @@ public class BatchLoaderService {
         int batchId = 0;
         int batchStartLine = 0;
         boolean inCyclone = false;
-    }
-
-    // ... existing code ...
-    /**
-     * Determines if a line is a cyclone header line
-     * Header lines have fewer commas and contain cyclone metadata
-     * Data lines have more commas (typically 20+ fields)
-     */
-    private boolean isHeaderLine(String line) {
-        if (line == null || line.trim().isEmpty()) {
-            return false;
-        }
-
-        // Count commas - header lines typically have 2-3 commas
-        // Data lines have 20+ commas (one before each field)
-        long commaCount = line.chars().filter(ch -> ch == ',').count();
-        return commaCount <= 3;
     }
 
     private RawBatch createBatch(int batchId, List<String> lines, int startLine, int endLine) {
