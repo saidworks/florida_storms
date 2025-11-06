@@ -1,6 +1,8 @@
 /* (C) Said Zitouni 2025 */
 package com.saidworks.florida_storms.service.batch;
 
+import static com.saidworks.florida_storms.helper.RawBatchAssembler.splitToBatches;
+
 import com.saidworks.florida_storms.config.CycloneProcessingProperties;
 import com.saidworks.florida_storms.models.batch.RawBatch;
 import com.saidworks.florida_storms.models.exception.IoBlockingException;
@@ -18,14 +20,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
-import static com.saidworks.florida_storms.models.domain.HeaderLine.isHeaderLine;
-
-/**
- * Service responsible for loading the file and splitting it into raw batches using async execution
- * Ensures cyclone headers and their data lines stay together in the same batch
- */
-@Service
 @Log4j2
+@Service
 public class BatchLoaderService {
     private final CycloneProcessingProperties properties;
     private final ResourceLoader resourceLoader;
@@ -57,7 +53,8 @@ public class BatchLoaderService {
                             try (BufferedReader reader =
                                     new BufferedReader(
                                             new InputStreamReader(resource.getInputStream()))) {
-                                batches.set(processBatches(reader, targetChunkSize));
+                                // Delegate batch preparation to helper
+                                batches.set(splitToBatches(reader, targetChunkSize, log));
                             } catch (IOException e) {
                                 log.error("Error reading file: {}", resource.getFilename(), e);
                                 throw new IoBlockingException(
@@ -83,108 +80,5 @@ public class BatchLoaderService {
                         },
                         serviceTaskExecutor)
                 .join();
-    }
-
-    private List<RawBatch> processBatches(BufferedReader reader, int targetChunkSize)
-            throws IOException {
-        List<RawBatch> batches = new ArrayList<>();
-        BatchProcessingState state = new BatchProcessingState();
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            state.lineNumber++;
-            line = line.trim();
-
-            if (line.isEmpty()) {
-                continue;
-            }
-
-            if (isHeaderLine(line)) {
-                handleBatchBasedOnStateAndHeader(line, state, batches, targetChunkSize);
-            } else if (state.inCyclone) {
-                state.currentCyclone.add(line);
-            } else {
-                handleOrphanedLine(line, state);
-            }
-        }
-
-        finalizeBatches(state, batches);
-        return batches;
-    }
-
-    private void handleBatchBasedOnStateAndHeader(
-            String line, BatchProcessingState state, List<RawBatch> batches, int targetChunkSize) {
-        finalizePreviousCyclone(state);
-
-        if (shouldCreateNewBatch(state, targetChunkSize)) {
-            createAndAddBatch(state, batches);
-        }
-
-        startNewCyclone(line, state);
-    }
-
-    private void finalizePreviousCyclone(BatchProcessingState state) {
-        if (state.inCyclone && !state.currentCyclone.isEmpty()) {
-            state.currentBatch.addAll(state.currentCyclone);
-            state.currentCyclone.clear();
-        }
-    }
-
-    private boolean shouldCreateNewBatch(BatchProcessingState state, int targetChunkSize) {
-        return !state.currentBatch.isEmpty() && state.currentBatch.size() >= targetChunkSize;
-    }
-
-    private void createAndAddBatch(BatchProcessingState state, List<RawBatch> batches) {
-        batches.add(
-                createBatch(
-                        state.batchId++,
-                        state.currentBatch,
-                        state.batchStartLine,
-                        state.lineNumber - 1));
-        state.currentBatch = new ArrayList<>();
-        state.batchStartLine = state.lineNumber;
-    }
-
-    private void startNewCyclone(String line, BatchProcessingState state) {
-        state.currentCyclone.add(line);
-        state.inCyclone = true;
-    }
-
-    private void handleOrphanedLine(String line, BatchProcessingState state) {
-        log.warn("Found orphaned data line at line {}: {}", state.lineNumber, line);
-        state.currentBatch.add(line);
-    }
-
-    private void finalizeBatches(BatchProcessingState state, List<RawBatch> batches) {
-        if (state.inCyclone && !state.currentCyclone.isEmpty()) {
-            state.currentBatch.addAll(state.currentCyclone);
-        }
-
-        if (!state.currentBatch.isEmpty()) {
-            batches.add(
-                    createBatch(
-                            state.batchId,
-                            state.currentBatch,
-                            state.batchStartLine,
-                            state.lineNumber));
-        }
-    }
-
-    private static class BatchProcessingState {
-        List<String> currentBatch = new ArrayList<>();
-        List<String> currentCyclone = new ArrayList<>();
-        int lineNumber = 0;
-        int batchId = 0;
-        int batchStartLine = 0;
-        boolean inCyclone = false;
-    }
-
-    private RawBatch createBatch(int batchId, List<String> lines, int startLine, int endLine) {
-        return RawBatch.builder()
-                .batchId(batchId)
-                .lines(new ArrayList<>(lines))
-                .startLineNumber(startLine)
-                .endLineNumber(endLine)
-                .build();
     }
 }
