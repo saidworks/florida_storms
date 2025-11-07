@@ -164,17 +164,6 @@ public class BatchProcessorService {
                     batch.getValidationErrors());
             return false;
         }
-
-        for (ProcessedBatch.PartialCyclone partial : batch.getPartialCyclones()) {
-            if (partial.isHeaderPresent() && partial.getDataLines().isEmpty()) {
-                log.warn(
-                        "Batch {}: Cyclone {} has header but no data lines possible missing data"
-                                + " verify end result",
-                        batch.getBatchId(),
-                        partial.getCycloneId());
-            }
-        }
-
         return true;
     }
 }

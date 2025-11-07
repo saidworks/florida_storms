@@ -54,7 +54,7 @@ public class BatchLoaderService {
                                     new BufferedReader(
                                             new InputStreamReader(resource.getInputStream()))) {
                                 // Delegate batch preparation to helper
-                                batches.set(splitToBatches(reader, targetChunkSize, log));
+                                batches.set(splitToBatches(reader, targetChunkSize));
                             } catch (IOException e) {
                                 log.error("Error reading file: {}", resource.getFilename(), e);
                                 throw new IoBlockingException(

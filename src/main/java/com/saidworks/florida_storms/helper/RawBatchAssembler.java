@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class that assembles raw text lines into size‑bounded batches while respecting
@@ -23,7 +22,6 @@ import org.apache.logging.log4j.Logger;
  *   <li>Do not split a cyclone across batches (a cyclone's lines are kept together).</li>
  *   <li>Do not exceed the target chunk size unless adding the remainder of the current
  *       cyclone would exceed it—in which case the remainder is deferred to the next batch.</li>
- *   <li>Optionally warn about orphaned data lines (data lines that appear before any header).</li>
  * </ul>
  *
  * <p>Thread-safety: this class contains only stateless static methods and is thread-safe
@@ -52,12 +50,11 @@ public class RawBatchAssembler {
      * @param reader           the source of lines to read; the caller owns its lifecycle
      * @param targetChunkSize  the maximum number of lines per batch (soft limit that respects
      *                         cyclone boundaries)
-     * @param log              optional logger used to report orphaned data lines; may be null
      * @return a list of {@link RawBatch}es created during the scan
      * @throws IOException if reading from {@code reader} fails
      */
-    public static List<RawBatch> splitToBatches(
-            BufferedReader reader, int targetChunkSize, Logger log) throws IOException {
+    public static List<RawBatch> splitToBatches(BufferedReader reader, int targetChunkSize)
+            throws IOException {
         List<RawBatch> batches = new ArrayList<>();
         BatchProcessingState state = new BatchProcessingState();
         String line;
@@ -78,9 +75,6 @@ public class RawBatchAssembler {
             } else if (state.inCyclone) {
                 // Regular data line that belongs to the current cyclone
                 state.currentCyclone.add(line);
-            } else {
-                // Data line before any header: log as orphan and keep it to avoid data loss
-                handleOrphanedLine(line, state, log);
             }
         }
 
@@ -130,33 +124,24 @@ public class RawBatchAssembler {
     }
 
     /**
-     * Records a data line that appears before any cyclone header and optionally logs a warning.
-     *
-     * @param line   the orphaned data line
-     * @param state  mutable processing state holder
-     * @param log    optional logger; if non-null, a warning is emitted
-     */
-    private static void handleOrphanedLine(String line, BatchProcessingState state, Logger log) {
-        if (log != null) {
-            log.warn("Found orphaned data line at line {}: {}", state.lineNumber, line);
-        }
-        state.currentBatch.add(line);
-    }
-
-    /**
      * Internal mutable state used while scanning input lines.
      */
     private static class BatchProcessingState {
         /** Lines in the batch being built. */
         List<String> currentBatch = new ArrayList<>();
+
         /** Lines of the cyclone currently being read (header + data lines). */
         List<String> currentCyclone = new ArrayList<>();
+
         /** 1-based index of the line being processed (for diagnostics). */
         int lineNumber = 0;
+
         /** Identifier of the batch being built (assigned upstream). */
         int batchId = 0;
+
         /** File line number where the current batch started. */
         int batchStartLine = 0;
+
         /** Whether we are currently inside a cyclone block. */
         boolean inCyclone = false;
     }
