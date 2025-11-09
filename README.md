@@ -16,12 +16,15 @@ The app produces a report with the storm name, date of landfall, and maximum win
 | F-REQ-1   | Data Parsing: The application must be able to parse the HURDAT2 data set.                                                          | Completed   |
 | F-REQ-2   | Landfall Identification: The application must identify hurricanes that have made landfall in Florida since 1900.                   | Completed   |
 | F-REQ-3   | Report Generation: The application must output a report listing the name, date of landfall, and maximum wind speed for each event. | Completed   |
-| F-REQ-4   | Landfall Identification: Create a feature to not use `L` for landfall identification.                                              | QA          |
+| F-REQ-4-a | Landfall Identification: Create a feature to not use `L` for landfall identification.                                              | Not Started |
+| F-REQ-4-b | Landfall Identification: Filter by wind speed and pressure of Cyclone, to identify hurricane                                       | Not Started |
+| F-REQ-4-c | Landfall Identification:   Verify the cyclone landed in geocordinates that acually exists in Florida.                              | Not Started |
 | F-REQ-5   | Add client to get latitude and longitude of an area by name                                                                        | Completed   |
 | F-REQ-6   | Filter hurricanes based latitude and longitude                                                                                     | Completed   |
 | F-REQ-7   | Increase testing coverage by adding integration testing using cucumber framework                                                   | Ready       |
 | F-REQ-8   | Define and provision infrastructure using Iac to Azure                                                                             | Not Started |
 | F-REQ-9   | Implement CI/CD pipeline using Github Actions                                                                                      | Not Started |
+
 
 **Non-Functional Requirements:**
 
@@ -84,9 +87,9 @@ After the application starts, you can generate landfall reports by calling the R
 **Option 1: Browser (Easiest)**
 1. Start the application: `./gradlew bootRun`
 2. Open your web browser and navigate to:
-```
-http://localhost:1234/landfall/report/excel?areaName=Florida
-```
+    ```
+    http://localhost:1234/landfall/report/excel?areaName=Florida
+    ```
 3. The Excel file will automatically download to your Downloads folder
 4. Open the downloaded file with Excel, LibreOffice, or Google Sheets
 
@@ -97,7 +100,7 @@ http://localhost:1234/landfall/report/excel?areaName=Florida
 
 **Option 2: Command Line (curl)**
 ```bash
-curl localhost:1234/landfall/report/excel?areaName=Florida --output report.xls
+  curl localhost:1234/landfall/report/excel?areaName=Florida --output report.xls
 ```
 Notes
 -----
