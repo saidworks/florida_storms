@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.domain.GeoBoundary;
 import com.saidworks.florida_storms.models.domain.HurricaneFilterCriteria;
-import com.saidworks.florida_storms.service.landfall.GeocodingService;
 import com.saidworks.florida_storms.service.landfall.LandfallFilterService;
+import com.saidworks.florida_storms.service.port.GeocodingPort;
 import io.cucumber.java.DataTableType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -23,12 +23,12 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
     private GeoBoundary areaBoundary;
     private List<Cyclone> result;
     private final LandfallFilterService landfallFilterService;
-    private final GeocodingService geocodingService;
+    private final GeocodingPort geocodingPort;
 
     public FloridaLandfallSteps(
-            LandfallFilterService landfallFilterService, GeocodingService geocodingService) {
+            LandfallFilterService landfallFilterService, GeocodingPort geocodingPort) {
         this.landfallFilterService = landfallFilterService;
-        this.geocodingService = geocodingService;
+        this.geocodingPort = geocodingPort;
     }
 
     @Given("The geographic boundaries for Florida")
@@ -66,7 +66,7 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
     @Given("the {} find the geographic boundaries")
     public void theFindTheGeographicBoundaries(String areaName) {
         CompletableFuture<GeoBoundary> geoBoundaryCompletableFuture =
-                geocodingService.getAreaBoundaries(areaName);
+                geocodingPort.getAreaBoundaries(areaName);
         try {
             areaBoundary = geoBoundaryCompletableFuture.get();
 

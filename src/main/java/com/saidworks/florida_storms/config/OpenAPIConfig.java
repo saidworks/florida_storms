@@ -14,11 +14,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenAPIConfig {
 
-    @Value("${florida.storms.openapi.dev-url:http://localhost:8080}")
-    private String devUrl;
+    private final String devUrl;
+    private final String prodUrl;
 
-    @Value("${florida.storms.openapi.prod-url:https://api.florida-storms.com}")
-    private String prodUrl;
+    public OpenAPIConfig(
+            @Value("${florida.storms.openapi.dev-url:http://localhost:8080}") String devUrl,
+            @Value("${florida.storms.openapi.prod-url:https://api.florida-storms.com}")
+                    String prodUrl) {
+        this.devUrl = devUrl;
+        this.prodUrl = prodUrl;
+    }
 
     @Bean
     public OpenAPI myOpenAPI() {

@@ -146,12 +146,11 @@ public class BatchProcessorService {
                 }
             }
 
-        } catch (Exception e) {
-            String error =
-                    String.format(
-                            "Error parsing line %d: %s - %s", lineNumber, e.getMessage(), line);
-            log.warn(error);
-            errors.add(error);
+        } catch (IllegalArgumentException e) {
+            log.warn("Parse error at line {}: {}", lineNumber, e.getMessage());
+            errors.add(
+                    "Error parsing line %d in batch %d: %s"
+                            .formatted(lineNumber, rawBatch.getBatchId(), e.getMessage()));
         }
         return currentPartial;
     }

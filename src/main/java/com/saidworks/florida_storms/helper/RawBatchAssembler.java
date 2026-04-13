@@ -78,9 +78,18 @@ public class RawBatchAssembler {
             }
         }
 
-        // End of file: push any remaining cyclone lines into the current batch.
-        // Note: If a final batch flush is desired, consider adding it here.
+        // End of file: push any remaining cyclone lines into the current batch
+        // and flush the final batch into the result list.
         state.currentBatch.addAll(state.currentCyclone);
+        if (!state.currentBatch.isEmpty()) {
+            batches.add(
+                    RawBatch.builder()
+                            .batchId(state.batchId)
+                            .lines(state.currentBatch)
+                            .startLineNumber(state.batchStartLine)
+                            .endLineNumber(state.lineNumber)
+                            .build());
+        }
         return batches;
     }
 

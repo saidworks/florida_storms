@@ -32,6 +32,7 @@ public class CycloneProcessingProperties {
     public static class Hurricane {
         /** Saffir-Simpson Category 1 lower bound in knots. */
         private int minWindSpeedKnots = 64;
+
         /** Typical sea-level pressure at hurricane intensity (mbar). */
         private int maxCentralPressureMbar = 1000;
     }

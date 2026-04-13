@@ -58,6 +58,7 @@ public record HurricaneFilterCriteria(
             boolean hurricaneOnly,
             int minWindSpeedKnots,
             boolean useFloridaPolygon) {
-        return new HurricaneFilterCriteria(useLMarker, hurricaneOnly, minWindSpeedKnots, useFloridaPolygon);
+        return new HurricaneFilterCriteria(
+                useLMarker, hurricaneOnly, minWindSpeedKnots, useFloridaPolygon);
     }
 }

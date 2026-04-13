@@ -2,11 +2,13 @@
 package com.saidworks.florida_storms.models.domain;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class HeaderLine {
+    private static final int HEADER_DATA_MIN_LENGTH = 8;
+
     private String basin; // AL, EP, CP
     private int cycloneNumber; // 01
     private int year; // 1851
@@ -43,7 +45,7 @@ public class HeaderLine {
         String name = parts[1].trim();
         String entriesCount = parts[2].trim();
 
-        if (headerData.length() < 8) {
+        if (headerData.length() < HEADER_DATA_MIN_LENGTH) {
             throw new IllegalArgumentException("Invalid header data format: " + headerData);
         }
 

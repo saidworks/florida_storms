@@ -7,7 +7,9 @@ import com.saidworks.florida_storms.models.domain.FloridaPolygon;
 import com.saidworks.florida_storms.models.domain.GeoBoundary;
 import com.saidworks.florida_storms.models.domain.HurricaneFilterCriteria;
 import com.saidworks.florida_storms.models.exception.GeocodingException;
-import com.saidworks.florida_storms.service.batch.CycloneProcessingOrchestrator;
+import com.saidworks.florida_storms.service.port.CycloneDataPort;
+import com.saidworks.florida_storms.service.port.GeocodingPort;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -22,18 +24,18 @@ import org.springframework.stereotype.Service;
 @Log4j2
 public class LandfallFilterService {
 
-    private final CycloneProcessingOrchestrator orchestrator;
-    private final GeocodingService geocodingService;
+    private final CycloneDataPort cycloneDataPort;
+    private final GeocodingPort geocodingPort;
     private final ExecutorService serviceTaskExecutor;
     private final ExecutorService ioBlockingTaskExecutor;
 
     public LandfallFilterService(
-            CycloneProcessingOrchestrator orchestrator,
-            GeocodingService geocodingService,
+            CycloneDataPort cycloneDataPort,
+            GeocodingPort geocodingPort,
             @Qualifier("serviceTaskExecutor") ExecutorService serviceTaskExecutor,
             @Qualifier("ioBlockingTaskExecutor") ExecutorService ioBlockingTaskExecutor) {
-        this.orchestrator = orchestrator;
-        this.geocodingService = geocodingService;
+        this.cycloneDataPort = cycloneDataPort;
+        this.geocodingPort = geocodingPort;
         this.serviceTaskExecutor = serviceTaskExecutor;
         this.ioBlockingTaskExecutor = ioBlockingTaskExecutor;
     }
@@ -46,20 +48,10 @@ public class LandfallFilterService {
     public CompletableFuture<List<Cyclone>> filterByAreaLandfall(String areaName) {
         log.info("Starting landfall filter for area: {}", areaName);
 
-        CompletableFuture<GeoBoundary> boundaryFuture =
-                geocodingService.getAreaBoundaries(areaName);
+        CompletableFuture<GeoBoundary> boundaryFuture = geocodingPort.getAreaBoundaries(areaName);
 
         CompletableFuture<List<Cyclone>> cyclonesFuture =
-                CompletableFuture.supplyAsync(
-                        () -> {
-                            try {
-                                return orchestrator.processAllCyclones();
-                            } catch (Exception e) {
-                                log.error("Error loading cyclones", e);
-                                throw new GeocodingException("Failed to load cyclones", e);
-                            }
-                        },
-                        ioBlockingTaskExecutor);
+                CompletableFuture.supplyAsync(() -> loadCyclones(), ioBlockingTaskExecutor);
 
         return boundaryFuture.thenCombineAsync(
                 cyclonesFuture,
@@ -87,13 +79,8 @@ public class LandfallFilterService {
 
         return CompletableFuture.supplyAsync(
                 () -> {
-                    try {
-                        List<Cyclone> cyclones = orchestrator.processAllCyclones();
-                        return filterCyclonesByBoundary(cyclones, customBoundary);
-                    } catch (Exception e) {
-                        log.error("Error filtering by custom boundaries", e);
-                        throw new GeocodingException("Failed to filter cyclones", e);
-                    }
+                    List<Cyclone> cyclones = loadCyclones();
+                    return filterCyclonesByBoundary(cyclones, customBoundary);
                 },
                 serviceTaskExecutor);
     }
@@ -116,22 +103,14 @@ public class LandfallFilterService {
     public CompletableFuture<List<Cyclone>> filterByAreaLandfallAdvanced(
             String areaName, HurricaneFilterCriteria criteria) {
         log.info(
-                "Starting advanced landfall filter for area: {} with criteria: {}", areaName, criteria);
+                "Starting advanced landfall filter for area: {} with criteria: {}",
+                areaName,
+                criteria);
 
-        CompletableFuture<GeoBoundary> boundaryFuture =
-                geocodingService.getAreaBoundaries(areaName);
+        CompletableFuture<GeoBoundary> boundaryFuture = geocodingPort.getAreaBoundaries(areaName);
 
         CompletableFuture<List<Cyclone>> cyclonesFuture =
-                CompletableFuture.supplyAsync(
-                        () -> {
-                            try {
-                                return orchestrator.processAllCyclones();
-                            } catch (Exception e) {
-                                log.error("Error loading cyclones", e);
-                                throw new GeocodingException("Failed to load cyclones", e);
-                            }
-                        },
-                        ioBlockingTaskExecutor);
+                CompletableFuture.supplyAsync(() -> loadCyclones(), ioBlockingTaskExecutor);
 
         return boundaryFuture.thenCombineAsync(
                 cyclonesFuture,
@@ -204,6 +183,18 @@ public class LandfallFilterService {
         return filteredCyclones;
     }
 
+    /**
+     * Loads all cyclones from the data port, converting checked IOException to unchecked.
+     */
+    private List<Cyclone> loadCyclones() {
+        try {
+            return cycloneDataPort.processAllCyclones();
+        } catch (IOException e) {
+            log.error("Error loading cyclones from data source", e);
+            throw new GeocodingException("Failed to load cyclones", e);
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Detection-strategy predicates
     // -------------------------------------------------------------------------
@@ -249,9 +240,10 @@ public class LandfallFilterService {
         return cyclone.getDataLines().stream()
                 .filter(DataLine::isLandfall)
                 .filter(dl -> !criteria.hurricaneOnly() || dl.isHurricane())
-                .anyMatch(dataLine -> FloridaPolygon.containsPoint(
-                        toSignedLatitude(dataLine),
-                        toSignedLongitude(dataLine)));
+                .anyMatch(
+                        dataLine ->
+                                FloridaPolygon.containsPoint(
+                                        toSignedLatitude(dataLine), toSignedLongitude(dataLine)));
     }
 
     // -------------------------------------------------------------------------

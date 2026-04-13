@@ -162,11 +162,11 @@ public class LandfallController {
     @Operation(
             summary = "Advanced storm filter (F-REQ-4-a/b/c)",
             description =
-                    "Filter storms using configurable landfall detection strategies. "
-                            + "Set useLMarker=false for geo-coordinate detection (F-REQ-4-a), "
-                            + "hurricaneOnly=true to restrict to hurricane-strength events (F-REQ-4-b), "
-                            + "or usePolygon=true to verify coordinates against Florida's polygon "
-                            + "instead of its bounding box (F-REQ-4-c).")
+                    "Filter storms using configurable landfall detection strategies. Set"
+                        + " useLMarker=false for geo-coordinate detection (F-REQ-4-a),"
+                        + " hurricaneOnly=true to restrict to hurricane-strength events"
+                        + " (F-REQ-4-b), or usePolygon=true to verify coordinates against Florida's"
+                        + " polygon instead of its bounding box (F-REQ-4-c).")
     @ApiResponses(
             value = {
                 @ApiResponse(
@@ -183,9 +183,7 @@ public class LandfallController {
             })
     @GetMapping("/advanced")
     public CompletableFuture<List<Cyclone>> getStormsAdvanced(
-            @Parameter(
-                            description = "Name of the geographic area",
-                            example = "Florida")
+            @Parameter(description = "Name of the geographic area", example = "Florida")
                     @RequestParam(defaultValue = "Florida")
                     String areaName,
             @Parameter(
@@ -197,8 +195,8 @@ public class LandfallController {
                     boolean useLMarker,
             @Parameter(
                             description =
-                                    "Only include hurricane-strength cyclones (wind >= minWindSpeedKnots,"
-                                            + " F-REQ-4-b)",
+                                    "Only include hurricane-strength cyclones (wind >="
+                                            + " minWindSpeedKnots, F-REQ-4-b)",
                             example = "false")
                     @RequestParam(defaultValue = "false")
                     boolean hurricaneOnly,
@@ -227,13 +225,16 @@ public class LandfallController {
                 usePolygon);
 
         HurricaneFilterCriteria criteria =
-                HurricaneFilterCriteria.of(useLMarker, hurricaneOnly, minWindSpeedKnots, usePolygon);
+                HurricaneFilterCriteria.of(
+                        useLMarker, hurricaneOnly, minWindSpeedKnots, usePolygon);
 
         return CompletableFuture.runAsync(
                         () -> log.info("Processing advanced request for area: {}", areaName),
                         controllerTaskExecutor)
                 .thenCompose(
-                        _ -> landfallFilterService.filterByAreaLandfallAdvanced(areaName, criteria));
+                        _ ->
+                                landfallFilterService.filterByAreaLandfallAdvanced(
+                                        areaName, criteria));
     }
 
     @Operation(

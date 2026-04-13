@@ -87,9 +87,9 @@ After the application starts, you can generate landfall reports by calling the R
 **Option 1: Browser (Easiest)**
 1. Start the application: `./gradlew bootRun`
 2. Open your web browser and navigate to:
-    ```
-    http://localhost:1234/landfall/report/excel?areaName=Florida
-    ```
+	```
+	http://localhost:1234/landfall/report/excel?areaName=Florida
+	```
 3. The Excel file will automatically download to your Downloads folder
 4. Open the downloaded file with Excel, LibreOffice, or Google Sheets
 
@@ -100,7 +100,7 @@ After the application starts, you can generate landfall reports by calling the R
 
 **Option 2: Command Line (curl)**
 ```bash
-  curl localhost:1234/landfall/report/excel?areaName=Florida --output report.xls
+curl localhost:1234/landfall/report/excel?areaName=Florida --output report.xls
 ```
 Notes
 -----
