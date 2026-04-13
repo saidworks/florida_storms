@@ -3,9 +3,11 @@ package com.saidworks.florida_storms.models.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
+@Jacksonized
 public class HeaderLine {
     private static final int HEADER_DATA_MIN_LENGTH = 8;
 

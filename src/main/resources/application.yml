@@ -25,12 +25,13 @@ cyclone:
   processing:
     chunk-size: 1000
   data:
-    hurdat2: classpath:datasets/hurdat2-1851-2024-040425.txt
+    hurdat2:
+      - classpath:datasets/hurdat2-1851-2024-040425.txt
   hurricane:
     min-wind-speed-knots: 64
     max-central-pressure-mbar: 1000
-
-
+  cache:
+    ttl: PT24H
 
 logging:
   config: classpath:log4j2.xml
@@ -44,8 +45,23 @@ server:
 
 
 spring:
+  profiles:
+    default: dev
   application:
     name: florida-storms
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
 
 springdoc:
   api-docs:

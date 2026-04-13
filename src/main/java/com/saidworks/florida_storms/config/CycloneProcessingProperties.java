@@ -1,6 +1,8 @@
 /* (C) Said Zitouni 2025 */
 package com.saidworks.florida_storms.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +22,8 @@ public class CycloneProcessingProperties {
 
     @lombok.Data
     public static class Data {
-        private String hurdat2;
+        /** One or more HURDAT2 file paths (classpath: or file: prefixes supported). */
+        private List<String> hurdat2 = new ArrayList<>();
     }
 
     /**

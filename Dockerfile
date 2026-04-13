@@ -23,8 +23,14 @@ WORKDIR /app
 # Copy the built application from the builder image
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+# Container-aware JVM memory settings
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Default Spring profile (overridden by K8s ConfigMap in production)
+ENV SPRING_PROFILES_ACTIVE=dev
+
 # Expose the application port
 EXPOSE 1234
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application with JVM opts
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

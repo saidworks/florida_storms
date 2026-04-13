@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "florida-storms.fullname" . }}-config
+  labels:
+    {{- include "florida-storms.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.spring.profiles.active | quote }}
+  CYCLONE_CACHE_TTL: {{ .Values.cyclone.cache.ttl | quote }}
+  {{- if .Values.redis.enabled }}
+  REDIS_HOST: {{ include "florida-storms.fullname" . }}-redis
+  REDIS_PORT: {{ .Values.redis.port | quote }}
+  {{- end }}

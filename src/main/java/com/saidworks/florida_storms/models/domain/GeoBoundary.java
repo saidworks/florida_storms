@@ -3,12 +3,14 @@ package com.saidworks.florida_storms.models.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /**
  * Represents geographic boundaries for a state or area (immutable value object).
  */
 @Value
 @Builder
+@Jacksonized
 public class GeoBoundary {
     private String name;
     private double minLatitude;

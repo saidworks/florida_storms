@@ -1,0 +1,6 @@
+apiVersion: v2
+name: florida-storms
+description: HURDAT2 Florida Landfall Finder — processes hurricane track data and identifies storms that made landfall in Florida
+type: application
+version: 0.1.0
+appVersion: "0.0.1-SNAPSHOT"

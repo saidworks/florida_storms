@@ -26,16 +26,16 @@ To run a single test class: `./gradlew test --tests 'com.saidworks.florida_storm
 
 ```
 HURDAT2 file → BatchLoaderService → RawBatch[]
-                                       ↓
-                   BatchProcessorService (parallel, async)
-                                       ↓
-                                  ProcessedBatch[]
-                                       ↓
-                   BatchMergerService → Cyclone[]
-                                       ↓
-                   LandfallFilterService (boundary + detection strategies)
-                                       ↓
-                   LandfallReportService (Excel via Apache POI)
+									↓
+				BatchProcessorService (parallel, async)
+									↓
+								ProcessedBatch[]
+									↓
+				BatchMergerService → Cyclone[]
+									↓
+				LandfallFilterService (boundary + detection strategies)
+									↓
+				LandfallReportService (Excel via Apache POI)
 ```
 
 `CycloneProcessingOrchestrator` drives the pipeline. Each phase runs on dedicated thread pools configured in `application.yml` under `executors.*`.

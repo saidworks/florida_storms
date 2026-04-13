@@ -58,6 +58,11 @@ dependencies {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
 
+	// Caching and Redis
+	implementation libs.spring.boot.starter.cache
+	implementation libs.spring.boot.starter.data.redis
+	implementation libs.spring.boot.starter.actuator
+
 	// API Documentation
 	implementation libs.springdoc.openapi.starter.webmvc.ui
 

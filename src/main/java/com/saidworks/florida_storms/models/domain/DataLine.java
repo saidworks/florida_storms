@@ -7,9 +7,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
+@Jacksonized
 public class DataLine {
     private static final int MINIMUM_DATA_FIELDS = 20;
     private static final LocalDate CUTOFF_DATE = LocalDate.of(1900, 1, 1);

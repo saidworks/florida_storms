@@ -1,0 +1,12 @@
+Florida Storms has been deployed!
+
+To access the application:
+
+  kubectl port-forward svc/{{ include "florida-storms.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+Then open:
+  Swagger UI: http://localhost:{{ .Values.service.port }}/swagger-ui/index.html
+  Health:     http://localhost:{{ .Values.service.port }}/actuator/health
+
+To evict all caches:
+  curl -X DELETE http://localhost:{{ .Values.service.port }}/admin/cache
