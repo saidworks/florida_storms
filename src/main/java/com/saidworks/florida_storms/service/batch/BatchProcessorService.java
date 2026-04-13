@@ -93,7 +93,9 @@ public class BatchProcessorService {
     /**
      * Parses a single line into the evolving {@code PartialCyclone} structure.
      * - If the line is a header, it finalizes the previous partial (if any) and starts a new one.
-     * - If the line is a data line, it adds eligible landfall entries (after 1900) to the current partial.
+     * - If the line is a data line, it adds all track points after 1900 to the current partial.
+     *   Landfall detection strategies (L-marker, geo-coordinate, hurricane) are applied
+     *   downstream in {@code LandfallFilterService} to support F-REQ-4-a/b/c.
      * Any parsing error is collected into {@code errors} and logged as a warning.
      */
     private static ProcessedBatch.PartialCyclone processPartialCyclone(
@@ -136,7 +138,10 @@ public class BatchProcessorService {
                 }
 
                 DataLine dataLine = DataLine.parse(line);
-                if (dataLine.isLandfall() && dataLine.isAfter1900()) {
+                if (dataLine.isAfter1900()) {
+                    // Store all track points after 1900; landfall detection
+                    // (L-marker, geo-coordinate, hurricane) is applied downstream in
+                    // LandfallFilterService. See F-REQ-4-a/b/c.
                     currentPartial.getDataLines().add(dataLine);
                 }
             }

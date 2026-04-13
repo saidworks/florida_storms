@@ -160,6 +160,14 @@ public class DataLine {
     }
 
     /**
+     * Checks if the storm meets hurricane strength (wind speed >= 64 knots, Category 1+).
+     * Used for F-REQ-4-b hurricane classification filtering.
+     */
+    public boolean isHurricane() {
+        return maxWindSpeed >= 64;
+    }
+
+    /**
      *   check if data line is within range of years
      */
     public boolean isAfter1900() {

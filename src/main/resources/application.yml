@@ -26,6 +26,9 @@ cyclone:
     chunk-size: 1000
   data:
     hurdat2: classpath:datasets/hurdat2-1851-2024-040425.txt
+  hurricane:
+    min-wind-speed-knots: 64
+    max-central-pressure-mbar: 1000
 
 
 

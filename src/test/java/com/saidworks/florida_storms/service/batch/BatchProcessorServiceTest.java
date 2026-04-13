@@ -89,6 +89,50 @@ class BatchProcessorServiceTest {
         log.info("Validation successful: {}", result);
     }
 
+    /**
+     * Regression guard for F-REQ-4-a/b/c refactor: BatchProcessorService must now store ALL
+     * post-1900 track points, not just L-marked ones. Landfall detection strategies are applied
+     * downstream in LandfallFilterService.
+     */
+    @Test
+    void testProcessBatch_NonLMarkerDataLinesAreStored() {
+        RawBatch rawBatch =
+                RawBatch.builder()
+                        .batchId(99)
+                        .lines(
+                                List.of(
+                                        "AL041851,            UNNAMED,     49,",
+                                        // L-marked landfall record
+                                        "19510816, 0000, L , HU, 27.0N,  81.0W,  80, 950, -999,"
+                                                + " -999, -999, -999, -999, -999, -999, -999, -999,"
+                                                + " -999, -999, -999",
+                                        // Non-L track point (open-ocean record, no L marker)
+                                        "19510816, 0600,  , HU, 28.0N,  80.5W,  75, 960, -999,"
+                                                + " -999, -999, -999, -999, -999, -999, -999, -999,"
+                                                + " -999, -999, -999"))
+                        .startLineNumber(1)
+                        .endLineNumber(3)
+                        .build();
+
+        ProcessedBatch result = batchProcessorService.processBatch(rawBatch).join();
+
+        assertThat(result.getPartialCyclones()).hasSize(1);
+        // Both lines (L and non-L) must now be stored
+        assertThat(result.getPartialCyclones().get(0).getDataLines())
+                .as("All post-1900 track points should be stored regardless of L marker")
+                .hasSize(2);
+
+        // Verify the L-marker flag is correctly parsed on each line
+        assertThat(result.getPartialCyclones().get(0).getDataLines().get(0).isLandfall())
+                .as("First data line should be L-marked")
+                .isTrue();
+        assertThat(result.getPartialCyclones().get(0).getDataLines().get(1).isLandfall())
+                .as("Second data line should not be L-marked")
+                .isFalse();
+
+        log.info("Non-L storage regression test passed: {}", result);
+    }
+
     // Test method for validateBatch
     @Test
     void testValidateBatch_Valid() {

@@ -2,7 +2,10 @@
 package com.saidworks.florida_storms.service.landfall;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
+import com.saidworks.florida_storms.models.domain.DataLine;
+import com.saidworks.florida_storms.models.domain.FloridaPolygon;
 import com.saidworks.florida_storms.models.domain.GeoBoundary;
+import com.saidworks.florida_storms.models.domain.HurricaneFilterCriteria;
 import com.saidworks.florida_storms.models.exception.GeocodingException;
 import com.saidworks.florida_storms.service.batch.CycloneProcessingOrchestrator;
 import java.util.List;
@@ -68,7 +71,7 @@ public class LandfallFilterService {
     }
 
     /**
-     * Filters cyclones by custom latitude/longitude boundaries
+     * Filters cyclones by custom latitude/longitude boundaries (L-marker detection).
      */
     public CompletableFuture<List<Cyclone>> filterByCustomBoundaries(
             double minLat, double maxLat, double minLon, double maxLon) {
@@ -96,7 +99,59 @@ public class LandfallFilterService {
     }
 
     /**
-     * Core filtering logic - filters cyclones that have landfall points within boundaries
+     * Advanced landfall filter supporting F-REQ-4-a/b/c detection strategies.
+     *
+     * <ul>
+     *   <li>F-REQ-4-a: pass {@code criteria.useLMarker() == false} to detect landfall by
+     *       geo-coordinate without requiring the HURDAT2 L record identifier.
+     *   <li>F-REQ-4-b: pass {@code criteria.hurricaneOnly() == true} to include only cyclones
+     *       that reached hurricane strength (>= 64 kt) at the landfall point.
+     *   <li>F-REQ-4-c: pass {@code criteria.useFloridaPolygon() == true} to verify coordinates
+     *       against Florida's polygon instead of its rectangular bounding box.
+     * </ul>
+     *
+     * @param areaName name of the geographic area (resolved via geocoding service)
+     * @param criteria detection strategy configuration
+     */
+    public CompletableFuture<List<Cyclone>> filterByAreaLandfallAdvanced(
+            String areaName, HurricaneFilterCriteria criteria) {
+        log.info(
+                "Starting advanced landfall filter for area: {} with criteria: {}", areaName, criteria);
+
+        CompletableFuture<GeoBoundary> boundaryFuture =
+                geocodingService.getAreaBoundaries(areaName);
+
+        CompletableFuture<List<Cyclone>> cyclonesFuture =
+                CompletableFuture.supplyAsync(
+                        () -> {
+                            try {
+                                return orchestrator.processAllCyclones();
+                            } catch (Exception e) {
+                                log.error("Error loading cyclones", e);
+                                throw new GeocodingException("Failed to load cyclones", e);
+                            }
+                        },
+                        ioBlockingTaskExecutor);
+
+        return boundaryFuture.thenCombineAsync(
+                cyclonesFuture,
+                (boundary, cyclones) -> {
+                    log.info(
+                            "Applying advanced filter on {} cyclones for area: {}",
+                            cyclones.size(),
+                            boundary.getName());
+                    return filterCyclonesByBoundaryAdvanced(cyclones, boundary, areaName, criteria);
+                },
+                serviceTaskExecutor);
+    }
+
+    /**
+     * Core filtering logic — L-marker + bounding-box (original behaviour, preserved for
+     * backward-compatibility with existing endpoints and Cucumber scenarios).
+     *
+     * <p>Because {@code BatchProcessorService} now stores all post-1900 track points, this method
+     * explicitly re-applies the L-marker check so the existing count of 167 Florida landfalls
+     * is preserved.
      */
     private List<Cyclone> filterCyclonesByBoundary(List<Cyclone> cyclones, GeoBoundary boundary) {
         log.info("Applying boundary filter: {}", boundary.getName());
@@ -114,16 +169,108 @@ public class LandfallFilterService {
     }
 
     /**
-     * Checks if a cyclone has any landfall points within the given boundary
+     * Advanced core filtering — dispatches to the appropriate detection strategy based on
+     * {@code criteria}.
+     */
+    private List<Cyclone> filterCyclonesByBoundaryAdvanced(
+            List<Cyclone> cyclones,
+            GeoBoundary boundary,
+            String areaName,
+            HurricaneFilterCriteria criteria) {
+
+        List<Cyclone> filteredCyclones =
+                cyclones.stream()
+                        .filter(
+                                cyclone -> {
+                                    if (criteria.useFloridaPolygon()
+                                            && areaName.equalsIgnoreCase("Florida")) {
+                                        return hasLandfallInPolygon(cyclone, criteria);
+                                    } else if (!criteria.useLMarker()) {
+                                        return hasCoordinateInBoundary(cyclone, boundary, criteria);
+                                    } else if (criteria.hurricaneOnly()) {
+                                        return hasHurricaneLandfallInBoundary(
+                                                cyclone, boundary, criteria.minWindSpeedKnots());
+                                    } else {
+                                        return hasLandfallInBoundary(cyclone, boundary);
+                                    }
+                                })
+                        .toList();
+
+        log.info(
+                "Advanced filter returned {} cyclones in {} (criteria: {})",
+                filteredCyclones.size(),
+                boundary.getName(),
+                criteria);
+        return filteredCyclones;
+    }
+
+    // -------------------------------------------------------------------------
+    // Detection-strategy predicates
+    // -------------------------------------------------------------------------
+
+    /**
+     * F-REQ-4-a (default/original): cyclone has at least one L-marked track point inside the
+     * bounding box.
      */
     private boolean hasLandfallInBoundary(Cyclone cyclone, GeoBoundary boundary) {
         return cyclone.getDataLines().stream()
-                .anyMatch(
-                        dataLine ->
-                                boundary.containsCoordinate(
-                                        dataLine.getLatitude(),
-                                        dataLine.getLatitudeDirection(),
-                                        dataLine.getLongitude(),
-                                        dataLine.getLongitudeDirection()));
+                .filter(DataLine::isLandfall)
+                .anyMatch(dataLine -> inBoundingBox(dataLine, boundary));
+    }
+
+    /**
+     * F-REQ-4-a (alternative): any track point inside the bounding box counts as landfall —
+     * no L marker required.
+     */
+    private boolean hasCoordinateInBoundary(
+            Cyclone cyclone, GeoBoundary boundary, HurricaneFilterCriteria criteria) {
+        return cyclone.getDataLines().stream()
+                .filter(dl -> !criteria.hurricaneOnly() || dl.isHurricane())
+                .anyMatch(dataLine -> inBoundingBox(dataLine, boundary));
+    }
+
+    /**
+     * F-REQ-4-b: cyclone has at least one L-marked track point inside the bounding box where wind
+     * speed meets the hurricane threshold.
+     */
+    private boolean hasHurricaneLandfallInBoundary(
+            Cyclone cyclone, GeoBoundary boundary, int minWindSpeedKnots) {
+        return cyclone.getDataLines().stream()
+                .filter(DataLine::isLandfall)
+                .filter(dl -> dl.getMaxWindSpeed() >= minWindSpeedKnots)
+                .anyMatch(dataLine -> inBoundingBox(dataLine, boundary));
+    }
+
+    /**
+     * F-REQ-4-c: cyclone has at least one L-marked track point inside Florida's polygon (more
+     * accurate than the bounding box which includes open water).
+     */
+    private boolean hasLandfallInPolygon(Cyclone cyclone, HurricaneFilterCriteria criteria) {
+        return cyclone.getDataLines().stream()
+                .filter(DataLine::isLandfall)
+                .filter(dl -> !criteria.hurricaneOnly() || dl.isHurricane())
+                .anyMatch(dataLine -> FloridaPolygon.containsPoint(
+                        toSignedLatitude(dataLine),
+                        toSignedLongitude(dataLine)));
+    }
+
+    // -------------------------------------------------------------------------
+    // Shared coordinate helpers
+    // -------------------------------------------------------------------------
+
+    private boolean inBoundingBox(DataLine dl, GeoBoundary boundary) {
+        return boundary.containsCoordinate(
+                dl.getLatitude(),
+                dl.getLatitudeDirection(),
+                dl.getLongitude(),
+                dl.getLongitudeDirection());
+    }
+
+    private double toSignedLatitude(DataLine dl) {
+        return dl.getLatitudeDirection() == 'S' ? -dl.getLatitude() : dl.getLatitude();
+    }
+
+    private double toSignedLongitude(DataLine dl) {
+        return dl.getLongitudeDirection() == 'W' ? -dl.getLongitude() : dl.getLongitude();
     }
 }

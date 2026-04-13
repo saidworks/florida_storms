@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.domain.GeoBoundary;
+import com.saidworks.florida_storms.models.domain.HurricaneFilterCriteria;
 import com.saidworks.florida_storms.service.landfall.GeocodingService;
 import com.saidworks.florida_storms.service.landfall.LandfallFilterService;
 import io.cucumber.java.DataTableType;
@@ -93,5 +94,55 @@ public class FloridaLandfallSteps extends CucumberSpringConfiguration {
                                 f.getMinLatitude() >= geoBoundary.getMinLatitude()
                                         && f.getMaxLatitude() <= geoBoundary.getMaxLatitude()
                                         && f.getMaxLongitude() <= geoBoundary.getMaxLongitude());
+    }
+
+    // -------------------------------------------------------------------------
+    // F-REQ-4-a: geo-coordinate detection (no L marker required)
+    // -------------------------------------------------------------------------
+
+    @When("We count cyclones using geo-coordinate detection within those boundaries")
+    public void countCyclonesUsingGeoCoordinateDetection() {
+        result =
+                landfallFilterService
+                        .filterByAreaLandfallAdvanced(
+                                areaBoundary.getName(), HurricaneFilterCriteria.withNoLMarker())
+                        .join();
+    }
+
+    @Then("the geo-coordinate landfall count should be at least {int}")
+    public void geoCoordinateLandfallCountShouldBeAtLeast(int minExpected) {
+        assertThat(result).as("Geo-coordinate Florida landfall count").isNotNull();
+        assertThat(result.size())
+                .as("Geo-coordinate count should be >= %d", minExpected)
+                .isGreaterThanOrEqualTo(minExpected);
+    }
+
+    // -------------------------------------------------------------------------
+    // F-REQ-4-b: hurricane-strength filter
+    // -------------------------------------------------------------------------
+
+    @When("We count hurricane-strength cyclones that made landfall within those boundaries")
+    public void countHurricaneStrengthCyclones() {
+        result =
+                landfallFilterService
+                        .filterByAreaLandfallAdvanced(
+                                areaBoundary.getName(), HurricaneFilterCriteria.withHurricaneOnly())
+                        .join();
+    }
+
+    @Then("the hurricane landfall count should be greater than {int}")
+    public void hurricaneLandfallCountShouldBeGreaterThan(int minExpected) {
+        assertThat(result).as("Hurricane Florida landfall count").isNotNull();
+        assertThat(result.size())
+                .as("Hurricane count should be > %d", minExpected)
+                .isGreaterThan(minExpected);
+    }
+
+    @Then("the hurricane landfall count should be less than {int}")
+    public void hurricaneLandfallCountShouldBeLessThan(int maxExpected) {
+        assertThat(result).as("Hurricane Florida landfall count").isNotNull();
+        assertThat(result.size())
+                .as("Hurricane count should be < %d (subset of all landfalls)", maxExpected)
+                .isLessThan(maxExpected);
     }
 }
