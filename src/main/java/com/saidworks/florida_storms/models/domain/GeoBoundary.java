@@ -1,18 +1,16 @@
 /* (C) Said Zitouni 2025 */
 package com.saidworks.florida_storms.models.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /**
- * Represents geographic boundaries for a state or area
+ * Represents geographic boundaries for a state or area (immutable value object).
  */
-@Data
+@Value
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Jacksonized
 public class GeoBoundary {
     private String name;
     private double minLatitude;

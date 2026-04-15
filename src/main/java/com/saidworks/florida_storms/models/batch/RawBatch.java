@@ -3,12 +3,12 @@ package com.saidworks.florida_storms.models.batch;
 
 import java.util.List;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 /**
- * Represents a batch of raw file lines before parsing
+ * Represents a batch of raw file lines before parsing (immutable value object).
  */
-@Data
+@Value
 @Builder
 public class RawBatch {
     private int batchId;

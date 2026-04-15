@@ -3,15 +3,19 @@ package com.saidworks.florida_storms.models.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@Data
+@Value
 @Builder
+@Jacksonized
 public class DataLine {
+    private static final int MINIMUM_DATA_FIELDS = 20;
+    private static final LocalDate CUTOFF_DATE = LocalDate.of(1900, 1, 1);
+
     private LocalDateTime dateTime;
     private Character recordType; // L, P, I, S, T or null for space/empty
     private String stormStatus; // TD, TS, HU, EX, SD, SS, LO, DB
@@ -51,7 +55,7 @@ public class DataLine {
      */
     public static DataLine parse(String line) {
         String[] parts = line.split(",");
-        if (parts.length < 20) { // Minimum 20 fields are expected
+        if (parts.length < MINIMUM_DATA_FIELDS) {
             throw new IllegalArgumentException(
                     "Invalid data line format: not enough fields in line: " + line);
         }
@@ -160,11 +164,17 @@ public class DataLine {
     }
 
     /**
-     *   check if data line is within range of years
+     * Checks if the storm meets hurricane strength (wind speed >= 64 knots, Category 1+).
+     * Used for F-REQ-4-b hurricane classification filtering.
+     */
+    public boolean isHurricane() {
+        return maxWindSpeed >= 64;
+    }
+
+    /**
+     * Returns true if the data line's date is after January 1, 1900.
      */
     public boolean isAfter1900() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate cutoffDate = LocalDate.parse("19000101", formatter);
-        return dateTime.toLocalDate().isAfter(cutoffDate);
+        return dateTime.toLocalDate().isAfter(CUTOFF_DATE);
     }
 }

@@ -90,6 +90,14 @@ public class BatchProcessorService {
                 serviceTaskExecutor);
     }
 
+    /**
+     * Parses a single line into the evolving {@code PartialCyclone} structure.
+     * - If the line is a header, it finalizes the previous partial (if any) and starts a new one.
+     * - If the line is a data line, it adds all track points after 1900 to the current partial.
+     *   Landfall detection strategies (L-marker, geo-coordinate, hurricane) are applied
+     *   downstream in {@code LandfallFilterService} to support F-REQ-4-a/b/c.
+     * Any parsing error is collected into {@code errors} and logged as a warning.
+     */
     private static ProcessedBatch.PartialCyclone processPartialCyclone(
             RawBatch rawBatch,
             String line,
@@ -130,17 +138,19 @@ public class BatchProcessorService {
                 }
 
                 DataLine dataLine = DataLine.parse(line);
-                if (dataLine.isLandfall() && dataLine.isAfter1900()) {
+                if (dataLine.isAfter1900()) {
+                    // Store all track points after 1900; landfall detection
+                    // (L-marker, geo-coordinate, hurricane) is applied downstream in
+                    // LandfallFilterService. See F-REQ-4-a/b/c.
                     currentPartial.getDataLines().add(dataLine);
                 }
             }
 
-        } catch (Exception e) {
-            String error =
-                    String.format(
-                            "Error parsing line %d: %s - %s", lineNumber, e.getMessage(), line);
-            log.warn(error);
-            errors.add(error);
+        } catch (IllegalArgumentException e) {
+            log.warn("Parse error at line {}: {}", lineNumber, e.getMessage());
+            errors.add(
+                    "Error parsing line %d in batch %d: %s"
+                            .formatted(lineNumber, rawBatch.getBatchId(), e.getMessage()));
         }
         return currentPartial;
     }
@@ -158,17 +168,6 @@ public class BatchProcessorService {
                     batch.getValidationErrors());
             return false;
         }
-
-        for (ProcessedBatch.PartialCyclone partial : batch.getPartialCyclones()) {
-            if (partial.isHeaderPresent() && partial.getDataLines().isEmpty()) {
-                log.warn(
-                        "Batch {}: Cyclone {} has header but no data lines possible missing data"
-                                + " verify end result",
-                        batch.getBatchId(),
-                        partial.getCycloneId());
-            }
-        }
-
         return true;
     }
 }

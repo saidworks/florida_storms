@@ -1,0 +1,11 @@
+cyclone:
+  cache:
+    ttl: PT1H
+
+spring:
+  cache:
+    type: simple
+
+logging:
+  level:
+    com.saidworks.florida_storms: DEBUG

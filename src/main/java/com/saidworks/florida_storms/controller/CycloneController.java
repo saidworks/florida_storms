@@ -3,7 +3,7 @@ package com.saidworks.florida_storms.controller;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.exception.BatchProcessingException;
-import com.saidworks.florida_storms.service.batch.CycloneProcessingOrchestrator;
+import com.saidworks.florida_storms.service.port.CycloneDataPort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/cyclones")
 public class CycloneController {
-    private final CycloneProcessingOrchestrator orchestrator;
+    private final CycloneDataPort cycloneDataPort;
     private final ExecutorService controllerTaskExecutor;
 
     public CycloneController(
-            CycloneProcessingOrchestrator orchestrator, ExecutorService controllerTaskExecutor) {
-        this.orchestrator = orchestrator;
+            CycloneDataPort cycloneDataPort, ExecutorService controllerTaskExecutor) {
+        this.cycloneDataPort = cycloneDataPort;
         this.controllerTaskExecutor = controllerTaskExecutor;
     }
 
@@ -56,7 +56,7 @@ public class CycloneController {
         return CompletableFuture.supplyAsync(
                         () -> {
                             try {
-                                return orchestrator.processAllCyclones();
+                                return cycloneDataPort.processAllCyclones();
                             } catch (IOException e) {
                                 throw new BatchProcessingException(
                                         "controller failed to process batch", e);

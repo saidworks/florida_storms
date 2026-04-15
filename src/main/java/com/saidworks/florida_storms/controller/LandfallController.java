@@ -2,6 +2,7 @@
 package com.saidworks.florida_storms.controller;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
+import com.saidworks.florida_storms.models.domain.HurricaneFilterCriteria;
 import com.saidworks.florida_storms.service.landfall.LandfallFilterService;
 import com.saidworks.florida_storms.service.report.LandfallReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -144,6 +145,96 @@ public class LandfallController {
                         _ ->
                                 landfallFilterService.filterByCustomBoundaries(
                                         minLat, maxLat, minLon, maxLon));
+    }
+
+    /**
+     * Advanced landfall filter supporting F-REQ-4-a/b/c detection strategies.
+     *
+     * <ul>
+     *   <li>useLMarker=false → geo-coordinate detection without L marker (F-REQ-4-a)
+     *   <li>hurricaneOnly=true → only hurricane-strength landfalls ≥ minWindSpeedKnots (F-REQ-4-b)
+     *   <li>usePolygon=true → verify coordinates against Florida's polygon, not bounding box
+     *       (F-REQ-4-c, Florida only)
+     * </ul>
+     *
+     * Example: GET /landfall/advanced?areaName=Florida&hurricaneOnly=true
+     */
+    @Operation(
+            summary = "Advanced storm filter (F-REQ-4-a/b/c)",
+            description =
+                    "Filter storms using configurable landfall detection strategies. Set"
+                        + " useLMarker=false for geo-coordinate detection (F-REQ-4-a),"
+                        + " hurricaneOnly=true to restrict to hurricane-strength events"
+                        + " (F-REQ-4-b), or usePolygon=true to verify coordinates against Florida's"
+                        + " polygon instead of its bounding box (F-REQ-4-c).")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved storms for the advanced filter",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Cyclone.class))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid parameters",
+                        content = @Content)
+            })
+    @GetMapping("/advanced")
+    public CompletableFuture<List<Cyclone>> getStormsAdvanced(
+            @Parameter(description = "Name of the geographic area", example = "Florida")
+                    @RequestParam(defaultValue = "Florida")
+                    String areaName,
+            @Parameter(
+                            description =
+                                    "Use HURDAT2 L record identifier for landfall detection"
+                                            + " (false = geo-coordinate mode, F-REQ-4-a)",
+                            example = "true")
+                    @RequestParam(defaultValue = "true")
+                    boolean useLMarker,
+            @Parameter(
+                            description =
+                                    "Only include hurricane-strength cyclones (wind >="
+                                            + " minWindSpeedKnots, F-REQ-4-b)",
+                            example = "false")
+                    @RequestParam(defaultValue = "false")
+                    boolean hurricaneOnly,
+            @Parameter(
+                            description =
+                                    "Minimum wind speed in knots for hurricane classification"
+                                            + " (used when hurricaneOnly=true)",
+                            example = "64")
+                    @RequestParam(defaultValue = "64")
+                    int minWindSpeedKnots,
+            @Parameter(
+                            description =
+                                    "Use Florida polygon instead of bounding box (F-REQ-4-c,"
+                                            + " Florida only)",
+                            example = "false")
+                    @RequestParam(defaultValue = "false")
+                    boolean usePolygon) {
+
+        log.info(
+                "Advanced landfall request: area={}, useLMarker={}, hurricaneOnly={},"
+                        + " minWindKt={}, usePolygon={}",
+                areaName,
+                useLMarker,
+                hurricaneOnly,
+                minWindSpeedKnots,
+                usePolygon);
+
+        HurricaneFilterCriteria criteria =
+                HurricaneFilterCriteria.of(
+                        useLMarker, hurricaneOnly, minWindSpeedKnots, usePolygon);
+
+        return CompletableFuture.runAsync(
+                        () -> log.info("Processing advanced request for area: {}", areaName),
+                        controllerTaskExecutor)
+                .thenCompose(
+                        _ ->
+                                landfallFilterService.filterByAreaLandfallAdvanced(
+                                        areaName, criteria));
     }
 
     @Operation(

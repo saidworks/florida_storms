@@ -3,7 +3,7 @@ package com.saidworks.florida_storms.service.report;
 
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.domain.DataLine;
-import com.saidworks.florida_storms.models.exception.GeocodingException;
+import com.saidworks.florida_storms.models.exception.ReportGenerationException;
 import com.saidworks.florida_storms.service.landfall.LandfallFilterService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -118,7 +118,7 @@ public class LandfallReportService {
 
         } catch (IOException e) {
             log.error("Error creating Excel report", e);
-            throw new GeocodingException("Failed to create Excel report", e);
+            throw new ReportGenerationException("Failed to create Excel report", e);
         }
     }
 

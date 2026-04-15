@@ -11,20 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@Log4j2
 class BatchProcessorServiceTest {
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     private final BatchProcessorService batchProcessorService =
             new BatchProcessorService(executorService);
 
-    // Test method for processBatch with valid data
+    @AfterAll
+    static void tearDown() {
+        executorService.shutdown();
+    }
+
     @Test
-    void testProcessBatch_ValidData() {
+    @DisplayName("processBatch parses header and data lines into a valid partial cyclone")
+    void processBatch_validData_parsesCorrectly() {
         RawBatch rawBatch =
                 RawBatch.builder()
                         .batchId(1)
@@ -84,14 +88,46 @@ class BatchProcessorServiceTest {
                 .usingRecursiveComparison()
                 .ignoringFields("processingTimeMs")
                 .isEqualTo(expectedBatch);
-
-        // Optionally, you can also assert other fields or use more detailed comparisons as needed.
-        log.info("Validation successful: {}", result);
     }
 
-    // Test method for validateBatch
     @Test
-    void testValidateBatch_Valid() {
+    @DisplayName(
+            "processBatch stores all post-1900 track points regardless of L marker (F-REQ-4-a)")
+    void processBatch_nonLMarkerDataLines_storedForDownstreamFiltering() {
+        RawBatch rawBatch =
+                RawBatch.builder()
+                        .batchId(99)
+                        .lines(
+                                List.of(
+                                        "AL041851,            UNNAMED,     49,",
+                                        "19510816, 0000, L , HU, 27.0N,  81.0W,  80, 950, -999,"
+                                                + " -999, -999, -999, -999, -999, -999, -999, -999,"
+                                                + " -999, -999, -999",
+                                        "19510816, 0600,  , HU, 28.0N,  80.5W,  75, 960, -999,"
+                                                + " -999, -999, -999, -999, -999, -999, -999, -999,"
+                                                + " -999, -999, -999"))
+                        .startLineNumber(1)
+                        .endLineNumber(3)
+                        .build();
+
+        ProcessedBatch result = batchProcessorService.processBatch(rawBatch).join();
+
+        assertThat(result.getPartialCyclones()).hasSize(1);
+        assertThat(result.getPartialCyclones().get(0).getDataLines())
+                .as("All post-1900 track points should be stored regardless of L marker")
+                .hasSize(2);
+
+        assertThat(result.getPartialCyclones().get(0).getDataLines().get(0).isLandfall())
+                .as("First data line should be L-marked")
+                .isTrue();
+        assertThat(result.getPartialCyclones().get(0).getDataLines().get(1).isLandfall())
+                .as("Second data line should not be L-marked")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("validateBatch returns true for a valid batch")
+    void validateBatch_validBatch_returnsTrue() {
         ProcessedBatch validBatch =
                 ProcessedBatch.builder()
                         .batchId(1)
@@ -99,13 +135,12 @@ class BatchProcessorServiceTest {
                         .valid(true)
                         .build();
 
-        Assertions.assertTrue(batchProcessorService.validateBatch(validBatch));
-        log.info("Batch validation successful: {}", validBatch);
+        assertThat(batchProcessorService.validateBatch(validBatch)).isTrue();
     }
 
-    // Test method for validateBatch with errors
     @Test
-    void testValidateBatch_WithErrors() {
+    @DisplayName("validateBatch returns false when batch has validation errors")
+    void validateBatch_invalidBatch_returnsFalse() {
         ProcessedBatch invalidBatch =
                 ProcessedBatch.builder()
                         .batchId(2)
@@ -116,7 +151,6 @@ class BatchProcessorServiceTest {
 
         invalidBatch.getValidationErrors().add("Header but no data lines");
 
-        Assertions.assertFalse(batchProcessorService.validateBatch(invalidBatch));
-        log.info("Batch validation failed as expected: {}", invalidBatch);
+        assertThat(batchProcessorService.validateBatch(invalidBatch)).isFalse();
     }
 }

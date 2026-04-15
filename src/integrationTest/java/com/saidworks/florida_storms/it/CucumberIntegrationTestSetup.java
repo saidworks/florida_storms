@@ -22,4 +22,4 @@ import org.junit.platform.suite.api.Suite;
                         + "json:target/cucumber-reports/cucumber-report.json,"
                         + "junit:target/cucumber-reports/cucumber-report.xml")
 @ConfigurationParameter(key = "cucumber.publish", value = "true")
-public class CucumberIT {}
+public class CucumberIntegrationTestSetup {}

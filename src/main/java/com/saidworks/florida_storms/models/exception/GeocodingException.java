@@ -3,6 +3,10 @@ package com.saidworks.florida_storms.models.exception;
 
 public class GeocodingException extends RuntimeException {
 
+    public GeocodingException(String failureMessage) {
+        super(failureMessage);
+    }
+
     public GeocodingException(String failureMessage, Throwable cause) {
         super(failureMessage, cause);
     }

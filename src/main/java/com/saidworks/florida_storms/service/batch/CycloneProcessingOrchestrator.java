@@ -5,6 +5,7 @@ import com.saidworks.florida_storms.models.batch.ProcessedBatch;
 import com.saidworks.florida_storms.models.batch.RawBatch;
 import com.saidworks.florida_storms.models.domain.Cyclone;
 import com.saidworks.florida_storms.models.exception.BatchProcessingException;
+import com.saidworks.florida_storms.service.port.CycloneDataPort;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class CycloneProcessingOrchestrator {
+public class CycloneProcessingOrchestrator implements CycloneDataPort {
 
     private final BatchLoaderService batchLoaderService;
     private final BatchProcessorService batchProcessorService;
